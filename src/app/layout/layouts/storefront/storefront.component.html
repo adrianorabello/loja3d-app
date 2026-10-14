@@ -1,0 +1,270 @@
+<!-- Wrapper -->
+<div class="flex flex-col flex-auto w-full min-h-screen bg-default">
+
+    <!-- Header -->
+    <header class="sticky top-0 z-49 flex flex-col w-full border-b bg-card print:hidden">
+
+        <div class="flex items-center w-full h-16 sm:h-18 px-4 md:px-6 max-w-7xl mx-auto">
+
+            <!-- Logo -->
+            <a
+                class="flex items-center flex-shrink-0"
+                [routerLink]="'/'"
+                (click)="closeMobileMenu()">
+                <img
+                    class="w-8 h-8 sm:w-9 sm:h-9"
+                    src="assets/images/clara-rosa/logo.svg"
+                    alt="Clara Rosa">
+                <div class="hidden sm:flex flex-col ml-3 leading-none">
+                    <span class="text-lg font-semibold tracking-tight">{{ 'common.appName' | translate }}</span>
+                    <span class="text-sm text-secondary">{{ 'common.appTagline' | translate }}</span>
+                </div>
+            </a>
+
+            <!-- Desktop navigation -->
+            <nav class="hidden md:flex items-center ml-8 space-x-1">
+                <a
+                    *ngFor="let item of navigation; trackBy: trackByFn"
+                    class="px-3 py-2 rounded-md font-medium text-secondary hover:text-primary hover:bg-hover"
+                    [routerLink]="item.link"
+                    [routerLinkActive]="'text-primary bg-primary-50 dark:bg-primary-900 dark:bg-opacity-20'"
+                    [routerLinkActiveOptions]="{exact: !!item.exactMatch}">
+                    {{ item.title | translate }}
+                </a>
+            </nav>
+
+            <!-- Search -->
+            <div class="hidden lg:flex items-center ml-6 flex-auto max-w-xs">
+                <div class="flex items-center w-full h-10 px-3 rounded-full bg-gray-100 dark:bg-gray-800">
+                    <mat-icon
+                        class="icon-size-5 text-hint"
+                        [svgIcon]="'heroicons_outline:search'"></mat-icon>
+                    <input
+                        class="w-full ml-2 bg-transparent border-0 outline-none placeholder-hint"
+                        type="text"
+                        [formControl]="searchControl"
+                        [placeholder]="'catalog.searchPlaceholder' | translate"
+                        (keydown.enter)="search()">
+                </div>
+            </div>
+
+            <!-- Right-hand actions -->
+            <div class="flex items-center ml-auto space-x-1 sm:space-x-2">
+
+                <!-- Language switcher -->
+                <button
+                    mat-icon-button
+                    [matMenuTriggerFor]="languageMenu"
+                    [attr.aria-label]="'common.language' | translate">
+                    <mat-icon
+                        class="icon-size-5"
+                        [svgIcon]="'heroicons_outline:translate'"></mat-icon>
+                </button>
+                <mat-menu #languageMenu="matMenu">
+                    <button
+                        *ngFor="let language of languages"
+                        mat-menu-item
+                        (click)="setLanguage(language.id)">
+                        <span
+                            class="font-medium"
+                            [class.text-primary]="(language$ | async) === language.id">
+                            {{ language.label }}
+                        </span>
+                    </button>
+                </mat-menu>
+
+                <!-- Cart -->
+                <a
+                    class="relative"
+                    mat-icon-button
+                    [routerLink]="'/cart'"
+                    [attr.aria-label]="'nav.cart' | translate">
+                    <mat-icon
+                        class="icon-size-5"
+                        [svgIcon]="'heroicons_outline:shopping-cart'"></mat-icon>
+                    <span
+                        class="absolute top-0 right-0 flex items-center justify-center min-w-5 h-5 px-1 rounded-full bg-primary text-on-primary text-xs font-medium"
+                        *ngIf="(cartCount$ | async) as count">
+                        {{ count }}
+                    </span>
+                </a>
+
+                <!-- Account -->
+                <ng-container *ngIf="(user$ | async) as user; else signInButton">
+                    <button
+                        mat-icon-button
+                        [matMenuTriggerFor]="accountMenu"
+                        [attr.aria-label]="'nav.account' | translate">
+                        <img
+                            class="w-8 h-8 rounded-full object-cover"
+                            *ngIf="user.avatar; else accountIcon"
+                            [src]="user.avatar"
+                            [alt]="user.name">
+                        <ng-template #accountIcon>
+                            <mat-icon
+                                class="icon-size-5"
+                                [svgIcon]="'heroicons_outline:user-circle'"></mat-icon>
+                        </ng-template>
+                    </button>
+                    <mat-menu #accountMenu="matMenu">
+                        <div class="flex flex-col px-4 py-3 leading-none">
+                            <span class="font-medium truncate">{{ user.name }}</span>
+                            <span class="mt-1 text-sm text-secondary truncate">{{ user.email }}</span>
+                        </div>
+                        <mat-divider class="my-1"></mat-divider>
+                        <a
+                            mat-menu-item
+                            [routerLink]="'/account/orders'">
+                            <mat-icon
+                                class="icon-size-5"
+                                [svgIcon]="'heroicons_outline:clipboard-list'"></mat-icon>
+                            <span>{{ 'nav.myOrders' | translate }}</span>
+                        </a>
+                        <a
+                            mat-menu-item
+                            *ngIf="canSeeAdmin(user)"
+                            [routerLink]="'/admin/dashboard'">
+                            <mat-icon
+                                class="icon-size-5"
+                                [svgIcon]="'heroicons_outline:cog'"></mat-icon>
+                            <span>{{ 'nav.adminArea' | translate }}</span>
+                        </a>
+                        <mat-divider class="my-1"></mat-divider>
+                        <a
+                            mat-menu-item
+                            [routerLink]="'/sign-out'">
+                            <mat-icon
+                                class="icon-size-5"
+                                [svgIcon]="'heroicons_outline:logout'"></mat-icon>
+                            <span>{{ 'nav.signOut' | translate }}</span>
+                        </a>
+                    </mat-menu>
+                </ng-container>
+
+                <ng-template #signInButton>
+                    <a
+                        class="hidden sm:inline-flex"
+                        mat-stroked-button
+                        [routerLink]="'/sign-in'">
+                        {{ 'nav.signIn' | translate }}
+                    </a>
+                    <a
+                        class="sm:hidden"
+                        mat-icon-button
+                        [routerLink]="'/sign-in'"
+                        [attr.aria-label]="'nav.signIn' | translate">
+                        <mat-icon
+                            class="icon-size-5"
+                            [svgIcon]="'heroicons_outline:login'"></mat-icon>
+                    </a>
+                </ng-template>
+
+                <!-- Mobile menu toggle -->
+                <button
+                    class="md:hidden"
+                    mat-icon-button
+                    (click)="toggleMobileMenu()"
+                    [attr.aria-label]="'common.search' | translate">
+                    <mat-icon
+                        class="icon-size-5"
+                        [svgIcon]="mobileMenuOpen ? 'heroicons_outline:x' : 'heroicons_outline:menu'"></mat-icon>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile navigation -->
+        <div
+            class="md:hidden border-t"
+            *ngIf="mobileMenuOpen">
+            <div class="flex flex-col p-4 space-y-1">
+
+                <!-- Mobile search -->
+                <div class="flex items-center w-full h-10 px-3 mb-2 rounded-full bg-gray-100 dark:bg-gray-800">
+                    <mat-icon
+                        class="icon-size-5 text-hint"
+                        [svgIcon]="'heroicons_outline:search'"></mat-icon>
+                    <input
+                        class="w-full ml-2 bg-transparent border-0 outline-none placeholder-hint"
+                        type="text"
+                        [formControl]="searchControl"
+                        [placeholder]="'catalog.searchPlaceholder' | translate"
+                        (keydown.enter)="search()">
+                </div>
+
+                <a
+                    *ngFor="let item of navigation; trackBy: trackByFn"
+                    class="flex items-center px-3 py-2.5 rounded-md font-medium hover:bg-hover"
+                    [routerLink]="item.link"
+                    [routerLinkActive]="'text-primary'"
+                    [routerLinkActiveOptions]="{exact: !!item.exactMatch}"
+                    (click)="closeMobileMenu()">
+                    <mat-icon
+                        class="icon-size-5 mr-3 text-hint"
+                        [svgIcon]="item.icon"></mat-icon>
+                    {{ item.title | translate }}
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Content -->
+    <main class="flex flex-col flex-auto w-full">
+        <!-- *ngIf="true" hack is required here for router-outlet to work correctly.
+             Otherwise, layout changes won't be registered and the view won't be updated! -->
+        <router-outlet *ngIf="true"></router-outlet>
+    </main>
+
+    <!-- Footer -->
+    <footer class="flex flex-col w-full border-t bg-card print:hidden">
+        <div class="flex flex-col md:flex-row md:items-start w-full px-4 md:px-6 py-10 max-w-7xl mx-auto">
+
+            <!-- Brand -->
+            <div class="flex flex-col md:w-1/3">
+                <div class="flex items-center">
+                    <img
+                        class="w-8 h-8"
+                        src="assets/images/clara-rosa/logo.svg"
+                        alt="Clara Rosa">
+                    <span class="ml-3 text-lg font-semibold tracking-tight">{{ 'common.appName' | translate }}</span>
+                </div>
+                <p class="mt-3 text-secondary">{{ 'home.footerTagline' | translate }}</p>
+            </div>
+
+            <!-- Links -->
+            <div class="flex flex-col mt-8 md:mt-0 md:ml-auto">
+                <span class="font-semibold">{{ 'nav.products' | translate }}</span>
+                <a
+                    class="mt-3 text-secondary hover:text-primary"
+                    [routerLink]="'/products'">
+                    {{ 'catalog.title' | translate }}
+                </a>
+                <a
+                    class="mt-2 text-secondary hover:text-primary"
+                    [routerLink]="'/cart'">
+                    {{ 'nav.cart' | translate }}
+                </a>
+            </div>
+
+            <div class="flex flex-col mt-8 md:mt-0 md:ml-16">
+                <span class="font-semibold">{{ 'nav.account' | translate }}</span>
+                <a
+                    class="mt-3 text-secondary hover:text-primary"
+                    [routerLink]="'/account/orders'">
+                    {{ 'nav.myOrders' | translate }}
+                </a>
+                <a
+                    class="mt-2 text-secondary hover:text-primary"
+                    *ngIf="(user$ | async) === null"
+                    [routerLink]="'/sign-in'">
+                    {{ 'nav.signIn' | translate }}
+                </a>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-center w-full px-6 py-4 border-t">
+            <span class="text-sm text-secondary">
+                &copy; {{ currentYear }} {{ 'common.appName' | translate }}. {{ 'home.footerRights' | translate }}
+            </span>
+        </div>
+    </footer>
+</div>

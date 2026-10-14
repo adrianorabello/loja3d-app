@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" role="img" aria-label="Clara Rosa">
+    <defs>
+        <linearGradient id="cr-logo-petal" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#F43F5E"/>
+            <stop offset="100%" stop-color="#BE123C"/>
+        </linearGradient>
+    </defs>
+
+    <!-- Rounded tile -->
+    <rect x="1" y="1" width="46" height="46" rx="12" fill="url(#cr-logo-petal)"/>
+
+    <!-- A rose rendered as stacked print layers: four petals plus a core, each ring
+         slightly inset, echoing the layer-by-layer nature of 3D printing. -->
+    <g fill="none" stroke="#FFF1F2" stroke-linecap="round" stroke-width="2.4">
+        <path d="M24 12.5c4.6 0 8.3 3.4 8.3 7.6S28.6 27.7 24 27.7s-8.3-3.4-8.3-7.6 3.7-7.6 8.3-7.6z" opacity="0.55"/>
+        <path d="M24 16.2c3.1 0 5.6 2.3 5.6 5.1s-2.5 5.1-5.6 5.1-5.6-2.3-5.6-5.1 2.5-5.1 5.6-5.1z" opacity="0.8"/>
+    </g>
+    <circle cx="24" cy="21.3" r="2.3" fill="#FFF1F2"/>
+
+    <!-- Stem and leaves -->
+    <path d="M24 28.4v8.1" stroke="#FFF1F2" stroke-linecap="round" stroke-width="2.4" opacity="0.9"/>
+    <path d="M24 32.1c-2.6 0-4.7-1.5-4.7-3.4 2.6 0 4.7 1.5 4.7 3.4z" fill="#FFF1F2" opacity="0.7"/>
+    <path d="M24 34.6c2.6 0 4.7-1.5 4.7-3.4-2.6 0-4.7 1.5-4.7 3.4z" fill="#FFF1F2" opacity="0.7"/>
+</svg>
