@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { assign, cloneDeep } from 'lodash-es';
+import { cloneDeep } from 'lodash-es';
 import { FuseMockApiService } from '@fuse/lib/mock-api';
 import { MockSessionService } from 'app/mock-api/clara-rosa/auth/mock-session.service';
+import { User } from 'app/core/user/user.model';
 
 @Injectable({
     providedIn: 'root'
@@ -47,19 +48,17 @@ export class UserMockApi
             .onPatch('api/common/user')
             .reply(({request}) => {
 
-                // Get the user mock-api
-                const user = cloneDeep(request.body.user);
+                const user: Partial<User> = cloneDeep(request.body.user);
+                const updated = this._mockSessionService.updateCurrentUserProfile({
+                    name       : user.name,
+                    email      : user.email,
+                    dateOfBirth: user.dateOfBirth,
+                    addresses  : user.addresses
+                });
 
-                // Update the user mock-api.
-                //
-                // `role` is stripped: letting a client PATCH its own role would make the
-                // whole authorization model self-serve, even as a mock.
-                delete user.role;
-
-                this._mockSessionService.currentUser = assign({}, this._mockSessionService.currentUser, user);
-
-                // Return the response
-                return [200, cloneDeep(this._mockSessionService.currentUser)];
+                return updated
+                    ? [200, updated]
+                    : [409, {error: 'Email already in use'}];
             });
     }
 }

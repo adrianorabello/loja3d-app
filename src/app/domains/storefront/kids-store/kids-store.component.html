@@ -1,0 +1,176 @@
+<!-- Kids Store — playful storefront page -->
+<div class="kids-store">
+
+    <!-- ================================================================= -->
+    <!-- Hero Section                                                      -->
+    <!-- ================================================================= -->
+    <section class="kids-hero">
+        <div class="kids-hero__inner">
+
+            <!-- Text content -->
+            <div class="kids-hero__content">
+                <h1 class="kids-hero__title">
+                    {{ 'kidsStore.heroTitle' | translate }}
+                </h1>
+                <p class="kids-hero__subtitle">
+                    {{ 'kidsStore.heroSubtitle' | translate }}
+                </p>
+                <div class="kids-hero__actions">
+                    <button
+                        mat-flat-button
+                        class="kids-btn kids-btn--green"
+                        (click)="scrollToProducts()">
+                        <mat-icon
+                            class="kids-btn__icon"
+                            [svgIcon]="'heroicons_outline:cube'"></mat-icon>
+                        {{ 'kidsStore.exploreProducts' | translate }}
+                    </button>
+                    <a
+                        mat-stroked-button
+                        class="kids-btn kids-btn--outline"
+                        [routerLink]="'/products'">
+                        {{ 'kidsStore.aboutStore' | translate }}
+                    </a>
+                </div>
+            </div>
+
+            <!-- Featured product panels -->
+            <div class="kids-hero__featured" *ngIf="featuredProducts$ | async as featured">
+                <div
+                    class="kids-hero__panel"
+                    *ngFor="let product of featured; let i = index; trackBy: trackByFn"
+                    [style.background-color]="pastelColor(i)">
+                    <img
+                        class="kids-hero__panel-img"
+                        loading="lazy"
+                        [src]="productImage(product)"
+                        [alt]="product.name | localizedText"
+                        (error)="onImageError($event)">
+                </div>
+            </div>
+        </div>
+
+        <!-- Decorative wave divider -->
+        <div class="kids-hero__wave">
+            <svg viewBox="0 0 1440 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M0,60 C240,100 480,20 720,60 C960,100 1200,20 1440,60 L1440,100 L0,100 Z" fill="#FFFDF4"/>
+            </svg>
+        </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- Transient feedback message                                        -->
+    <!-- ================================================================= -->
+    <div class="kids-toast" *ngIf="message" role="status" aria-live="polite">
+        <mat-icon
+            class="kids-toast__icon"
+            [svgIcon]="'heroicons_outline:check-circle'"></mat-icon>
+        <span>{{ message | translate }}</span>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- Product Catalog Section                                           -->
+    <!-- ================================================================= -->
+    <section class="kids-products" id="kids-products">
+        <div class="kids-products__inner">
+
+            <!-- Section heading -->
+            <div class="kids-products__header">
+                <h2 class="kids-products__title">
+                    {{ 'kidsStore.productsTitle' | translate }}
+                </h2>
+                <p class="kids-products__subtitle">
+                    {{ 'kidsStore.productsSubtitle' | translate }}
+                </p>
+            </div>
+
+            <!-- Product grid -->
+            <div class="kids-products__grid" *ngIf="products$ | async as products">
+                <div
+                    class="kids-card"
+                    *ngFor="let product of products; let i = index; trackBy: trackByFn">
+
+                    <!-- Image area with pastel background -->
+                    <a
+                        class="kids-card__image-wrap"
+                        [style.background-color]="pastelColor(i)"
+                        [routerLink]="['/products', product.slug]"
+                        tabindex="-1"
+                        aria-hidden="true">
+                        <img
+                            class="kids-card__image"
+                            loading="lazy"
+                            [src]="productImage(product)"
+                            [alt]="product.name | localizedText"
+                            (error)="onImageError($event)">
+                    </a>
+
+                    <!-- Product info -->
+                    <div class="kids-card__body">
+                        <div class="kids-card__meta">
+                            <h3 class="kids-card__name">
+                                <a [routerLink]="['/products', product.slug]">
+                                    {{ product.name | localizedText }}
+                                </a>
+                            </h3>
+                            <span class="kids-card__price">
+                                {{ product.price | currency }}
+                            </span>
+                        </div>
+
+                        <!-- Color swatches -->
+                        <div class="kids-card__colors" *ngIf="product.colors?.length">
+                            <span
+                                class="kids-card__swatch"
+                                *ngFor="let color of product.colors"
+                                [style.background-color]="color.hex"
+                                [title]="color.name | localizedText">
+                            </span>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="kids-card__actions">
+                            <button
+                                mat-stroked-button
+                                class="kids-btn kids-btn--outline-sm"
+                                (click)="buyNow(product)">
+                                {{ 'kidsStore.buyNow' | translate }}
+                            </button>
+                            <button
+                                mat-flat-button
+                                class="kids-btn kids-btn--green-sm"
+                                (click)="addToCart(product)">
+                                <mat-icon
+                                    class="kids-btn__icon"
+                                    [svgIcon]="'heroicons_outline:shopping-cart'"></mat-icon>
+                                {{ 'kidsStore.addToCart' | translate }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- Call to Action Section                                             -->
+    <!-- ================================================================= -->
+    <section class="kids-cta">
+        <div class="kids-cta__inner">
+            <h2 class="kids-cta__title">
+                {{ 'kidsStore.ctaTitle' | translate }}
+            </h2>
+            <p class="kids-cta__body">
+                {{ 'kidsStore.ctaBody' | translate }}
+            </p>
+            <a
+                mat-flat-button
+                class="kids-btn kids-btn--orange"
+                [routerLink]="'/products'">
+                {{ 'kidsStore.exploreProducts' | translate }}
+            </a>
+        </div>
+    </section>
+
+</div>

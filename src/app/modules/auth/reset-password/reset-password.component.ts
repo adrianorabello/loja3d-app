@@ -1,4 +1,5 @@
 import { Component, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, NgForm, Validators } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
 import { FuseAnimations } from '@fuse/animations';
@@ -28,7 +29,8 @@ export class AuthResetPasswordComponent implements OnInit
      */
     constructor(
         private _authService: AuthService,
-        private _formBuilder: FormBuilder
+        private _formBuilder: FormBuilder,
+        private _route: ActivatedRoute
     )
     {
     }
@@ -44,7 +46,7 @@ export class AuthResetPasswordComponent implements OnInit
     {
         // Create the form
         this.resetPasswordForm = this._formBuilder.group({
-                password       : ['', Validators.required],
+                password       : ['', [Validators.required, Validators.minLength(8)]],
                 passwordConfirm: ['', Validators.required]
             },
             {
@@ -62,9 +64,14 @@ export class AuthResetPasswordComponent implements OnInit
      */
     resetPassword(): void
     {
-        // Return if the form is invalid
-        if ( this.resetPasswordForm.invalid )
+        const token = this._route.snapshot.queryParamMap.get('token');
+        if ( this.resetPasswordForm.invalid || !token )
         {
+            if ( !token )
+            {
+                this.alert = {type: 'error', message: 'Link inválido ou expirado. Peça uma nova recuperação de senha.'};
+                this.showAlert = true;
+            }
             return;
         }
 
@@ -75,7 +82,7 @@ export class AuthResetPasswordComponent implements OnInit
         this.showAlert = false;
 
         // Send the request to the server
-        this._authService.resetPassword(this.resetPasswordForm.get('password').value)
+        this._authService.resetPassword(token, this.resetPasswordForm.get('password').value)
             .pipe(
                 finalize(() => {
 
@@ -95,7 +102,7 @@ export class AuthResetPasswordComponent implements OnInit
                     // Set the alert
                     this.alert = {
                         type   : 'success',
-                        message: 'Your password has been reset.'
+                        message: 'Senha redefinida com sucesso. Já pode iniciar sessão.'
                     };
                 },
                 (response) => {
@@ -103,7 +110,7 @@ export class AuthResetPasswordComponent implements OnInit
                     // Set the alert
                     this.alert = {
                         type   : 'error',
-                        message: 'Something went wrong, please try again.'
+                        message: 'Link inválido ou expirado. Peça uma nova recuperação de senha.'
                     };
                 }
             );

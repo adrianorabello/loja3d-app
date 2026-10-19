@@ -1,0 +1,149 @@
+<!-- Same scoped-dark surface as the catalogue; see catalog.component.html for why a bare
+     `.dark` is sufficient and why appConfig.scheme stays 'light'. -->
+<div class="dark flex flex-col flex-auto w-full bg-default">
+    <div class="w-full max-w-7xl mx-auto px-4 md:px-6 py-8">
+
+        <!-- Not found -->
+        <empty-state
+            *ngIf="notFound"
+            [icon]="'heroicons_outline:exclamation'"
+            [titleKey]="'product.notFoundTitle'"
+            [bodyKey]="'product.notFoundBody'"></empty-state>
+
+        <div class="flex justify-center" *ngIf="notFound">
+            <a mat-stroked-button [routerLink]="['/products']">
+                {{ 'product.backToCatalog' | translate }}
+            </a>
+        </div>
+
+        <!-- Loading -->
+        <div class="py-16 text-center text-secondary" *ngIf="loading && !notFound">
+            {{ 'common.loading' | translate }}
+        </div>
+
+        <!-- Product -->
+        <ng-container *ngIf="product && !notFound">
+
+            <a
+                class="inline-flex items-center text-sm text-secondary hover:text-teal-300"
+                [routerLink]="['/products']">
+                <mat-icon class="icon-size-4 mr-1" [svgIcon]="'heroicons_outline:arrow-narrow-left'"></mat-icon>
+                {{ 'product.backToCatalog' | translate }}
+            </a>
+
+            <div class="flex flex-col lg:flex-row gap-8 mt-6">
+
+                <!-- Gallery -->
+                <div class="flex flex-col flex-0 w-full lg:w-1/2 min-w-0">
+                    <!-- Light plate, matching the cards. Fixed 1:1 box so switching images
+                         never shifts the layout. -->
+                    <div class="rounded-2xl overflow-hidden bg-white">
+                        <div class="aspect-w-1 aspect-h-1">
+                            <img
+                                class="w-full h-full object-cover"
+                                [src]="activeImage"
+                                [alt]="product.name | localizedText">
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3 mt-3" *ngIf="images.length > 1">
+                        <button
+                            class="flex-0 w-20 rounded-lg overflow-hidden bg-white border-2"
+                            *ngFor="let image of images; let i = index"
+                            type="button"
+                            [ngClass]="i === activeImageIndex ? 'border-teal-400' : 'border-transparent'"
+                            [attr.aria-label]="'product.imageOf' | translate: {current: i + 1, total: images.length}"
+                            [attr.aria-pressed]="i === activeImageIndex"
+                            (click)="showImage(i)">
+                            <div class="aspect-w-1 aspect-h-1">
+                                <img class="w-full h-full object-cover" [src]="image" alt="">
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Details -->
+                <div class="flex flex-col flex-auto min-w-0">
+
+                    <stock-badge [product]="product"></stock-badge>
+
+                    <h1 class="mt-2 text-3xl md:text-4xl font-extrabold tracking-tight text-teal-300">
+                        {{ product.name | localizedText }}
+                    </h1>
+
+                    <div class="mt-2 text-3xl font-bold text-default">
+                        {{ product.price | currency }}
+                    </div>
+
+                    <div class="mt-1 text-sm text-secondary" *ngIf="isMadeToOrder">
+                        {{ 'product.madeToOrderHint' | translate }}
+                    </div>
+
+                    <!-- Description. Empty for a half-translated record, in which case the
+                         LocalizedTextPipe falls back to the other language. -->
+                    <div class="mt-6" *ngIf="product.description | localizedText">
+                        <div class="font-semibold text-default">{{ 'product.description' | translate }}</div>
+                        <p class="mt-1 leading-relaxed text-secondary">
+                            {{ product.description | localizedText }}
+                        </p>
+                    </div>
+
+                    <!-- Colours -->
+                    <div class="mt-6" *ngIf="product.colors?.length">
+                        <div class="font-semibold text-default">{{ 'product.colors' | translate }}</div>
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            <button
+                                class="flex items-center px-3 py-1.5 rounded-full border-2 bg-card"
+                                *ngFor="let color of product.colors"
+                                type="button"
+                                [ngClass]="color.id === selectedColorId ? 'border-teal-400' : 'border-transparent'"
+                                [attr.aria-pressed]="color.id === selectedColorId"
+                                (click)="selectColor(color.id)">
+                                <span
+                                    class="w-4 h-4 mr-2 rounded-full border border-gray-600"
+                                    [style.background-color]="color.hex"></span>
+                                <span class="text-sm text-default">{{ color.name | localizedText }}</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Quantity -->
+                    <div class="mt-6">
+                        <div class="font-semibold text-default">{{ 'product.quantity' | translate }}</div>
+                        <div class="flex items-center mt-2">
+                            <button
+                                mat-icon-button
+                                [disabled]="quantity <= 1"
+                                [attr.aria-label]="'product.quantity' | translate"
+                                (click)="changeQuantity(-1)">
+                                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:minus-sm'"></mat-icon>
+                            </button>
+                            <span class="w-10 text-center text-lg font-semibold text-default">{{ quantity }}</span>
+                            <button
+                                mat-icon-button
+                                [disabled]="quantity >= maxQuantity"
+                                [attr.aria-label]="'product.quantity' | translate"
+                                (click)="changeQuantity(1)">
+                                <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:plus-sm'"></mat-icon>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Transient feedback -->
+                    <div class="mt-4 text-sm font-medium text-teal-300" *ngIf="message">
+                        {{ message | translate: messageParams }}
+                    </div>
+
+                    <button
+                        class="w-full sm:w-auto sm:min-w-60 mt-6 bg-white text-gray-900 hover:bg-gray-100"
+                        mat-flat-button
+                        [disabled]="!canAdd"
+                        (click)="addToCart()">
+                        {{ 'product.addToCart' | translate }}
+                    </button>
+                </div>
+            </div>
+        </ng-container>
+
+    </div>
+</div>

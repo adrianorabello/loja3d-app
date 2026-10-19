@@ -1,0 +1,31 @@
+<div class="storefront-home">
+    <ng-container *ngIf="products$ | async as products; else catalogueState">
+        <home-hero
+            [products]="products"
+            (explore)="scrollToCatalog()"
+            (requestQuote)="requestCustomQuote()">
+        </home-hero>
+
+        <home-catalog
+            [products]="products"
+            (addToCart)="addToCart($event)">
+        </home-catalog>
+        <home-custom-banner (requestQuote)="requestCustomQuote()"></home-custom-banner>
+        <home-custom-banner (requestQuote)="requestCustomQuote()"></home-custom-banner>
+    </ng-container>
+
+    <ng-template #catalogueState>
+        <section class="home-state" aria-live="polite">
+            <ng-container *ngIf="loadError; else loadingState">
+                <h1>{{ 'home.feedback.loadFailedTitle' | translate }}</h1>
+                <p>{{ 'home.feedback.loadFailed' | translate }}</p>
+                <button mat-flat-button color="primary" (click)="retryLoading()">
+                    {{ 'common.retry' | translate }}
+                </button>
+            </ng-container>
+            <ng-template #loadingState>
+                <p>{{ 'common.loading' | translate }}</p>
+            </ng-template>
+        </section>
+    </ng-template>
+</div>

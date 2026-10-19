@@ -2,8 +2,8 @@
     <div class="md:flex md:items-center md:justify-end w-full sm:w-auto md:h-full md:w-1/2 py-8 px-4 sm:p-12 md:p-16 sm:rounded-2xl md:rounded-none sm:shadow md:shadow-none sm:bg-card">
         <div class="w-full max-w-80 sm:w-80 mx-auto sm:mx-0">
             <!-- Logo -->
-            <div class="w-12">
-                <img src="assets/images/logo/logo.svg">
+            <div>
+                <img class="h-8 w-auto" src="assets/images/logo/printoy-purple.svg" alt="Printoy 3D">
             </div>
 
             <!-- Title -->
@@ -66,6 +66,7 @@
                         id="password"
                         matInput
                         type="password"
+                        autocomplete="new-password"
                         [formControlName]="'password'"
                         #passwordField>
                     <button
@@ -86,9 +87,28 @@
                         Password is required
                     </mat-error>
                     <mat-error *ngIf="signUpForm.get('password').hasError('minlength')">
-                        Password must be at least 4 characters
+                        A senha deve ter pelo menos 8 caracteres
                     </mat-error>
                 </mat-form-field>
+
+                <!-- Confirm password -->
+                <mat-form-field class="w-full">
+                    <mat-label>Confirmar senha</mat-label>
+                    <input
+                        matInput
+                        type="password"
+                        autocomplete="new-password"
+                        [formControlName]="'passwordConfirm'">
+                    <mat-error *ngIf="signUpForm.get('passwordConfirm').hasError('required')">
+                        Confirme a senha
+                    </mat-error>
+                    <mat-error *ngIf="signUpForm.get('passwordConfirm').hasError('mustMatch')">
+                        As senhas não coincidem
+                    </mat-error>
+                </mat-form-field>
+
+                <!-- Phone (optional) -->
+                <app-phone-input [formControlName]="'phone'" label="Telefone (opcional)"></app-phone-input>
 
                 <!-- ToS and PP -->
                 <div class="inline-flex items-end w-full mt-1.5">

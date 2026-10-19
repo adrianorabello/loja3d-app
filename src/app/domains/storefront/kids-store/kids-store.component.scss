@@ -1,0 +1,520 @@
+// =====================================================================================
+// Kids Store — Scoped styles
+//
+// All styles are scoped to the .kids-store wrapper class. They do not leak into other
+// Fuse pages. Design tokens are defined as SCSS variables rather than CSS custom
+// properties because this page does not need runtime theming and the variables are
+// consumed only here.
+// =====================================================================================
+
+// -------------------------------------------------------------------------------------
+// Design tokens
+// -------------------------------------------------------------------------------------
+$kids-bg-main:     #FFFDF4;
+$kids-bg-cream:    #F5F0DF;
+$kids-green:       #397D16;
+$kids-green-hover: #2E6612;
+$kids-orange:      #F47B20;
+$kids-orange-hover:#E06A10;
+$kids-pink:        #F5A3C7;
+$kids-blue:        #9CCAF5;
+$kids-yellow:      #F8DA62;
+$kids-text:        #29321E;
+$kids-text-light:  #5A6350;
+$kids-radius:      1.25rem;
+$kids-radius-sm:   0.75rem;
+$kids-font:        'Nunito', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+// -------------------------------------------------------------------------------------
+// Host element
+// -------------------------------------------------------------------------------------
+:host {
+    display: block;
+    width: 100%;
+}
+
+// -------------------------------------------------------------------------------------
+// Page wrapper
+// -------------------------------------------------------------------------------------
+.kids-store {
+    background: $kids-bg-main;
+    color: $kids-text;
+    font-family: $kids-font;
+    overflow-x: hidden;
+    width: 100%;
+}
+
+// =====================================================================================
+// HERO SECTION
+// =====================================================================================
+.kids-hero {
+    position: relative;
+    background: $kids-bg-cream;
+    padding: 3rem 1.5rem 0;
+    overflow: hidden;
+
+    &__inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        max-width: 1440px;
+        width: 100%;
+        margin: 0 auto;
+        gap: 2.5rem;
+
+        @media (min-width: 1024px) {
+            flex-direction: row;
+            align-items: center;
+            gap: 3rem;
+            padding: 3rem 0 2rem;
+        }
+    }
+
+    &__content {
+        flex: 1;
+        text-align: center;
+
+        @media (min-width: 1024px) {
+            text-align: left;
+        }
+    }
+
+    &__title {
+        font-family: $kids-font;
+        font-weight: 900;
+        font-size: clamp(2rem, 5vw, 3.75rem);
+        line-height: 1.1;
+        color: $kids-orange;
+        letter-spacing: -0.02em;
+        margin: 0 0 1rem;
+    }
+
+    &__subtitle {
+        font-family: $kids-font;
+        font-weight: 600;
+        font-size: clamp(1rem, 2vw, 1.25rem);
+        line-height: 1.6;
+        color: $kids-text-light;
+        margin: 0 0 2rem;
+        max-width: 480px;
+
+        @media (min-width: 1024px) {
+            margin-left: 0;
+        }
+
+        // Center on mobile
+        @media (max-width: 1023px) {
+            margin-left: auto;
+            margin-right: auto;
+        }
+    }
+
+    &__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        justify-content: center;
+
+        @media (min-width: 1024px) {
+            justify-content: flex-start;
+        }
+    }
+
+    // Featured product panels
+    &__featured {
+        display: flex;
+        gap: 1rem;
+        flex-shrink: 0;
+        justify-content: center;
+        padding-bottom: 2rem;
+
+        @media (min-width: 1024px) {
+            gap: 1.25rem;
+            padding-bottom: 0;
+        }
+    }
+
+    &__panel {
+        width: 140px;
+        height: 180px;
+        border-radius: $kids-radius;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        transition: transform 0.3s ease;
+
+        &:nth-child(2) {
+            transform: translateY(1rem);
+        }
+
+        @media (min-width: 768px) {
+            width: 180px;
+            height: 220px;
+        }
+
+        @media (min-width: 1024px) {
+            width: 200px;
+            height: 250px;
+        }
+    }
+
+    &__panel-img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+    }
+
+    // Wave divider
+    &__wave {
+        position: relative;
+        margin-top: -1px;
+        line-height: 0;
+
+        svg {
+            display: block;
+            width: 100%;
+            height: 60px;
+
+            @media (min-width: 768px) {
+                height: 80px;
+            }
+        }
+    }
+}
+
+// =====================================================================================
+// TOAST / FEEDBACK MESSAGE
+// =====================================================================================
+.kids-toast {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: $kids-green;
+    color: #fff;
+    font-family: $kids-font;
+    font-weight: 700;
+    font-size: 0.9375rem;
+    text-align: center;
+    animation: kids-toast-in 0.3s ease;
+
+    &__icon {
+        color: #fff;
+        width: 20px;
+        height: 20px;
+        min-width: 20px;
+    }
+}
+
+@keyframes kids-toast-in {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+// =====================================================================================
+// PRODUCTS SECTION
+// =====================================================================================
+.kids-products {
+    padding: 3rem 1.5rem 4rem;
+
+    &__inner {
+        max-width: 1440px;
+        width: 100%;
+        margin: 0 auto;
+    }
+
+    &__header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+
+    &__title {
+        font-family: $kids-font;
+        font-weight: 800;
+        font-size: clamp(1.5rem, 3vw, 2.5rem);
+        color: $kids-green;
+        margin: 0 0 0.5rem;
+        letter-spacing: 0.02em;
+    }
+
+    &__subtitle {
+        font-family: $kids-font;
+        font-weight: 600;
+        font-size: 1.0625rem;
+        color: $kids-text-light;
+        margin: 0;
+    }
+
+    // Responsive grid
+    &__grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+
+        @media (min-width: 640px) {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 1024px) {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+    }
+}
+
+// =====================================================================================
+// PRODUCT CARD
+// =====================================================================================
+.kids-card {
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border-radius: $kids-radius;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+    }
+
+    // Image area
+    &__image-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+        aspect-ratio: 1 / 1;
+        cursor: pointer;
+        text-decoration: none;
+        overflow: hidden;
+        transition: background-color 0.3s ease;
+    }
+
+    &__image {
+        max-width: 80%;
+        max-height: 80%;
+        object-fit: contain;
+        transition: transform 0.3s ease;
+        filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.1));
+    }
+
+    &:hover &__image {
+        transform: scale(1.05);
+    }
+
+    // Card body
+    &__body {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        padding: 1.25rem;
+        background: $kids-bg-cream;
+    }
+
+    &__meta {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    &__name {
+        font-family: $kids-font;
+        font-weight: 700;
+        font-size: 1.0625rem;
+        line-height: 1.3;
+        margin: 0;
+        flex: 1;
+
+        a {
+            color: $kids-green;
+            text-decoration: none;
+            transition: color 0.2s;
+
+            &:hover {
+                color: $kids-green-hover;
+                text-decoration: underline;
+            }
+        }
+    }
+
+    &__price {
+        font-family: $kids-font;
+        font-weight: 800;
+        font-size: 1.25rem;
+        color: $kids-text;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    // Color swatches
+    &__colors {
+        display: flex;
+        gap: 0.375rem;
+        margin-bottom: 1rem;
+    }
+
+    &__swatch {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 2px solid rgba(0, 0, 0, 0.1);
+        flex-shrink: 0;
+        cursor: default;
+    }
+
+    // Action buttons
+    &__actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: auto;
+    }
+}
+
+// =====================================================================================
+// BUTTONS
+// =====================================================================================
+
+// Base kids button overrides — Material button reset
+.kids-btn {
+    font-family: $kids-font !important;
+    font-weight: 700 !important;
+    border-radius: $kids-radius-sm !important;
+    text-transform: none !important;
+    letter-spacing: 0.01em !important;
+    line-height: 1.4 !important;
+    padding: 0 1.5rem !important;
+    height: 44px !important;
+    min-height: 44px !important;
+
+    &__icon {
+        width: 18px !important;
+        height: 18px !important;
+        min-width: 18px !important;
+        margin-right: 0.375rem !important;
+    }
+}
+
+// Hero: solid green
+.kids-btn--green {
+    background-color: $kids-green !important;
+    color: #fff !important;
+
+    &:hover {
+        background-color: $kids-green-hover !important;
+    }
+}
+
+// Hero: outlined
+.kids-btn--outline {
+    border-color: $kids-green !important;
+    color: $kids-green !important;
+
+    &:hover {
+        background-color: rgba($kids-green, 0.06) !important;
+    }
+}
+
+// CTA: solid orange
+.kids-btn--orange {
+    background-color: $kids-orange !important;
+    color: #fff !important;
+
+    &:hover {
+        background-color: $kids-orange-hover !important;
+    }
+}
+
+// Card: smaller solid green
+.kids-btn--green-sm {
+    background-color: $kids-green !important;
+    color: #fff !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    padding: 0 1rem !important;
+    font-size: 0.8125rem !important;
+    flex: 1;
+
+    &:hover {
+        background-color: $kids-green-hover !important;
+    }
+}
+
+// Card: smaller outlined
+.kids-btn--outline-sm {
+    border-color: $kids-green !important;
+    color: $kids-green !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    padding: 0 1rem !important;
+    font-size: 0.8125rem !important;
+
+    &:hover {
+        background-color: rgba($kids-green, 0.06) !important;
+    }
+}
+
+// =====================================================================================
+// CTA SECTION
+// =====================================================================================
+.kids-cta {
+    background: $kids-bg-cream;
+    padding: 4rem 1.5rem;
+    text-align: center;
+
+    &__inner {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    &__title {
+        font-family: $kids-font;
+        font-weight: 800;
+        font-size: clamp(1.5rem, 3vw, 2rem);
+        color: $kids-orange;
+        margin: 0 0 0.75rem;
+    }
+
+    &__body {
+        font-family: $kids-font;
+        font-weight: 600;
+        font-size: 1.0625rem;
+        color: $kids-text-light;
+        margin: 0 0 1.5rem;
+        line-height: 1.6;
+    }
+}
+
+// =====================================================================================
+// REDUCED MOTION
+// =====================================================================================
+@media (prefers-reduced-motion: reduce) {
+    .kids-card,
+    .kids-card__image,
+    .kids-hero__panel,
+    .kids-toast {
+        transition: none !important;
+        animation: none !important;
+    }
+
+    .kids-card:hover {
+        transform: none !important;
+    }
+
+    .kids-card:hover .kids-card__image {
+        transform: none !important;
+    }
+}

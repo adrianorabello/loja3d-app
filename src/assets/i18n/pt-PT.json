@@ -1,6 +1,7 @@
 {
+    "phone": {"country": "País", "search": "Pesquisar país ou código", "number": "Telefone", "invalid": "Número de telefone inválido."},
     "common": {
-        "appName": "Clara Rosa",
+        "appName": "Printoy 3D",
         "appTagline": "Impressão 3D personalizada",
         "loading": "A carregar...",
         "save": "Guardar",
@@ -27,6 +28,7 @@
         "signUp": "Criar conta",
         "signOut": "Sair",
         "account": "Conta",
+        "profile": "O meu perfil",
         "adminArea": "Administração",
         "backToStore": "Voltar à loja"
     },
@@ -49,7 +51,41 @@
         "ctaTitle": "Tem uma ideia em mente?",
         "ctaBody": "Veja o nosso catálogo ou fale connosco sobre uma peça personalizada.",
         "footerRights": "Todos os direitos reservados.",
-        "footerTagline": "Peças impressas em 3D, feitas em Portugal."
+        "footerTagline": "Peças impressas em 3D, feitas em família.",
+        "landing": {
+            "eyebrow": "Feito em família, ideia por ideia",
+            "title": "Pequenas ideias,",
+            "titleAccent": "grandes criações em 3D!",
+            "subtitle": "Escolha uma das nossas peças ou partilhe a sua ideia para criarmos uma impressão 3D personalizada.",
+            "explore": "Explorar produtos",
+            "custom": "Quero uma impressão personalizada",
+            "madeInPortugal": "Produzido com cuidado em Portugal",
+            "visualLabel": "Seleção de peças impressas em 3D"
+        },
+        "catalog": {
+            "eyebrow": "Peças para o dia a dia",
+            "title": "As nossas pequenas criações",
+            "subtitle": "Cada peça é impressa com atenção aos detalhes e em várias cores.",
+            "dimensions": "Dimensões",
+            "empty": "Estamos a preparar novas criações. Volte em breve."
+        },
+        "custom": {
+            "eyebrow": "Tem uma ideia diferente?",
+            "title": "Vamos descobrir se ela pode virar realidade",
+            "body": "Conte-nos o que imaginou. Em breve poderá pedir um orçamento para uma peça personalizada.",
+            "action": "Solicitar orçamento"
+        },
+        "footer": {
+            "tagline": "Peças impressas em 3D, feitas em família.",
+            "madeInPortugal": "Feito com cuidado em Portugal"
+        },
+        "feedback": {
+            "added": "Produto adicionado ao carrinho.",
+            "unavailable": "Não foi possível adicionar este produto ao carrinho.",
+            "quoteUnavailable": "O pedido de orçamento personalizado estará disponível em breve.",
+            "loadFailedTitle": "Não foi possível carregar a loja",
+            "loadFailed": "O catálogo não está disponível neste momento. Tente novamente."
+        }
     },
     "catalog": {
         "title": "Produtos",
@@ -173,6 +209,33 @@
         "hasAccount": "Já tem conta?",
         "signInFailed": "Email ou palavra-passe incorretos."
     },
+    "customerAccount": {
+        "title": "A minha conta",
+        "subtitle": "Gira os seus dados de contacto e moradas de entrega.",
+        "profileTitle": "Dados de contacto",
+        "fullName": "Nome completo",
+        "email": "Endereço de email",
+        "phone": "Telefone",
+        "emailChangeHint": "Para alterar o e-mail é necessária uma confirmação.",
+        "dateOfBirth": "Data de nascimento",
+        "addressesTitle": "Moradas",
+        "addressesHint": "As alterações às moradas são guardadas juntamente com o perfil.",
+        "addAddress": "Adicionar morada",
+        "editAddress": "Editar morada",
+        "addressLabel": "Nome da morada",
+        "street": "Rua e número",
+        "unit": "Apartamento, andar, etc. (opcional)",
+        "postalCode": "Código postal",
+        "city": "Localidade",
+        "country": "País",
+        "noAddresses": "Ainda não guardou nenhuma morada.",
+        "saveAll": "Guardar perfil e moradas",
+        "saved": "O perfil e as moradas foram guardados.",
+        "emailTaken": "Este endereço de email já está a ser utilizado.",
+        "saveError": "Não foi possível guardar o perfil. Tente novamente.",
+        "removeAddressTitle": "Remover morada",
+        "removeAddressConfirm": "Remover a morada \"{{label}}\"?"
+    },
     "validation": {
         "required": "Este campo é obrigatório.",
         "email": "Indique um email válido.",
@@ -203,22 +266,41 @@
         },
         "products": {
             "title": "Produtos",
-            "newProduct": "Novo produto",
+            "eyebrow": "Gestão da loja",
+            "subtitle": "Cadastre produtos e escolha o que aparece no catálogo.",
+            "newProduct": "Cadastrar produto",
             "editProduct": "Editar produto",
+            "product": "Produto",
             "image": "Imagem",
             "name": "Nome",
             "category": "Categoria",
+            "dimensions": "Dimensões",
             "price": "Preço",
             "stock": "Stock",
             "status": "Estado",
+            "filterStatus": "Disponibilidade",
+            "allStatuses": "Todos",
+            "visible": "Visíveis",
+            "hidden": "Ocultos",
+            "visibleInStore": "Visível na loja",
+            "hiddenInStore": "Oculto na loja",
             "actions": "Ações",
             "active": "Ativo",
             "inactive": "Inativo",
+            "activate": "Ativar produto",
+            "deactivate": "Desativar produto",
             "noProducts": "Sem produtos.",
             "deleteTitle": "Eliminar produto",
             "deleteConfirm": "Tem a certeza de que quer eliminar \"{{name}}\"? Esta ação não pode ser revertida.",
             "saved": "Produto guardado.",
-            "deleted": "Produto eliminado."
+            "deleted": "Produto eliminado.",
+            "activated": "Produto ativado na loja.",
+            "deactivated": "Produto ocultado na loja.",
+            "statusUpdateError": "Não foi possível atualizar a disponibilidade do produto.",
+            "searchPlaceholder": "Pesquisar por nome",
+            "slugTaken": "Já existe um produto com este identificador.",
+            "saveError": "Não foi possível guardar o produto.",
+            "deleteError": "Não foi possível eliminar o produto."
         },
         "orders": {
             "title": "Encomendas",
@@ -237,6 +319,11 @@
         "nameEn": "Nome (Inglês)",
         "descriptionPt": "Descrição (Português)",
         "descriptionEn": "Descrição (Inglês)",
+        "dimensions": "Dimensões",
+        "widthMm": "Largura (mm)",
+        "heightMm": "Altura (mm)",
+        "depthMm": "Profundidade (mm)",
+        "completeDimensions": "Indique largura, altura e profundidade em conjunto ou deixe os três campos vazios.",
         "price": "Preço",
         "category": "Categoria",
         "stock": "Stock",
@@ -253,8 +340,22 @@
         "imageHint": "JPG ou PNG, até 2 MB por imagem.",
         "imageTooLarge": "A imagem \"{{name}}\" excede 2 MB.",
         "imageWrongType": "O ficheiro \"{{name}}\" não é uma imagem JPG ou PNG.",
+        "imageReadError": "Não foi possível ler a imagem \"{{name}}\".",
         "noImages": "Sem imagens. Adicione pelo menos uma.",
         "slug": "Identificador (slug)",
         "slugHint": "Usado no endereço do produto. Gerado a partir do nome."
+    },
+    "kidsStore": {
+        "heroTitle": "ESTRANHAMENTE FOFO. SERIAMENTE DIVERTIDO.",
+        "heroSubtitle": "Descobre produtos coloridos, criativos e únicos, feitos com impressão 3D.",
+        "exploreProducts": "Explorar Produtos",
+        "aboutStore": "Sobre a Loja",
+        "productsTitle": "AS NOSSAS PEQUENAS CRIAÇÕES",
+        "productsSubtitle": "Escolhe o teu favorito e leva-o para casa!",
+        "buyNow": "Comprar Agora",
+        "addToCart": "Adicionar ao Carrinho",
+        "addedToCart": "Adicionado ao carrinho!",
+        "ctaTitle": "Tens uma ideia maluca?",
+        "ctaBody": "Vê o nosso catálogo completo ou fala connosco sobre uma peça personalizada — adoramos um desafio criativo!"
     }
 }

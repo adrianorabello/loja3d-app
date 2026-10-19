@@ -45,8 +45,11 @@ export class AuthInterceptor implements HttpInterceptor
         return next.handle(newReq).pipe(
             catchError((error) => {
 
-                // Catch "401 Unauthorized" responses
-                if ( error instanceof HttpErrorResponse && error.status === 401 )
+                // Catch "401 Unauthorized" responses, but skip sign-in/sign-up attempts
+                // so the user sees the validation alert rather than triggering an instant reload.
+                const isAuthEndpoint = req.url.includes('auth/sign-in') || req.url.includes('auth/sign-up');
+
+                if ( error instanceof HttpErrorResponse && error.status === 401 && !isAuthEndpoint )
                 {
                     // Sign out
                     this._authService.signOut();

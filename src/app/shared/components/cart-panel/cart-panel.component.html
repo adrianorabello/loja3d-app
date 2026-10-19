@@ -1,0 +1,147 @@
+<!--
+    `role="dialog"` and the focus trap apply only in overlay mode. Trapping focus in the
+    desktop side panel would be wrong: there it is an in-flow column of the page, not a modal.
+-->
+<div
+    class="flex flex-col w-full h-full bg-card"
+    [attr.role]="isOverlay ? 'dialog' : null"
+    [attr.aria-modal]="isOverlay ? 'true' : null"
+    [attr.aria-label]="'cart.title' | translate"
+    [cdkTrapFocus]="isOverlay"
+    [cdkTrapFocusAutoCapture]="isOverlay"
+    (keydown.escape)="closeRequested.emit()">
+
+    <ng-container *ngIf="vm$ | async as vm">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between flex-0 px-5 py-4 border-b">
+            <div class="flex items-center">
+                <mat-icon class="icon-size-5 text-teal-300" [svgIcon]="'heroicons_outline:shopping-bag'"></mat-icon>
+                <div class="ml-2 text-lg font-semibold text-default">{{ 'cart.title' | translate }}</div>
+            </div>
+
+            <div class="flex items-center">
+                <div class="text-sm text-secondary" *ngIf="vm.itemCount">
+                    {{ 'cart.itemCount' | translate: {count: vm.itemCount} }}
+                </div>
+                <button
+                    class="ml-1"
+                    *ngIf="isOverlay"
+                    mat-icon-button
+                    [attr.aria-label]="'common.close' | translate"
+                    (click)="closeRequested.emit()">
+                    <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:x'"></mat-icon>
+                </button>
+            </div>
+        </div>
+
+        <!-- Transient validation feedback -->
+        <div
+            class="flex-0 px-5 py-3 text-sm font-medium text-amber-400 border-b"
+            *ngIf="message">
+            {{ message | translate: messageParams }}
+        </div>
+
+        <!-- Empty state -->
+        <empty-state
+            *ngIf="!vm.lines.length"
+            [icon]="'heroicons_outline:shopping-bag'"
+            [titleKey]="'cart.emptyTitle'"
+            [bodyKey]="'cart.emptyBody'"
+            [actionKey]="isOverlay ? 'cart.continueShopping' : null"
+            (action)="closeRequested.emit()"></empty-state>
+
+        <!-- Lines -->
+        <div class="flex-auto overflow-y-auto" *ngIf="vm.lines.length">
+            <div
+                class="flex p-4 border-b"
+                *ngFor="let line of vm.lines; trackBy: trackByFn">
+
+                <!-- Thumbnail on a light plate, matching the catalogue cards -->
+                <div class="flex-0 w-16 h-16 rounded-lg overflow-hidden bg-white">
+                    <img class="w-full h-full object-cover" [src]="line.image" [alt]="line.name | localizedText">
+                </div>
+
+                <div class="flex flex-col flex-auto min-w-0 ml-3">
+                    <!-- Name is the snapshot taken when the item was added, not a live lookup -->
+                    <div class="font-medium leading-tight text-default truncate">
+                        {{ line.name | localizedText }}
+                    </div>
+                    <div class="mt-0.5 text-sm text-secondary">
+                        {{ line.unitPrice | currency }}
+                    </div>
+
+                    <!-- Quantity -->
+                    <div class="flex items-center mt-2">
+                        <button
+                            class="flex-0"
+                            mat-icon-button
+                            [attr.aria-label]="'cart.quantity' | translate"
+                            (click)="changeQuantity(line, -1)">
+                            <mat-icon class="icon-size-4" [svgIcon]="'heroicons_outline:minus-sm'"></mat-icon>
+                        </button>
+                        <span class="w-8 text-center font-medium text-default">{{ line.quantity }}</span>
+                        <button
+                            class="flex-0"
+                            mat-icon-button
+                            [attr.aria-label]="'cart.quantity' | translate"
+                            (click)="changeQuantity(line, 1)">
+                            <mat-icon class="icon-size-4" [svgIcon]="'heroicons_outline:plus-sm'"></mat-icon>
+                        </button>
+
+                        <button
+                            class="flex-0 ml-auto"
+                            mat-icon-button
+                            [attr.aria-label]="'cart.remove' | translate"
+                            [matTooltip]="'cart.remove' | translate"
+                            (click)="remove(line)">
+                            <mat-icon class="icon-size-4 text-red-400" [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Line total -->
+                <div class="flex-0 ml-2 font-semibold text-default">
+                    {{ line.lineTotal | currency }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Totals + actions -->
+        <div class="flex-0 p-5 border-t" *ngIf="vm.lines.length">
+            <div class="flex items-center justify-between text-secondary">
+                <span>{{ 'cart.subtotal' | translate }}</span>
+                <span class="font-medium text-default">{{ vm.subtotal | currency }}</span>
+            </div>
+            <div class="flex items-center justify-between mt-1 text-secondary">
+                <span>{{ 'cart.shipping' | translate }}</span>
+                <!--
+                    Shipping is 0 for now, so render the word "Free" rather than a formatted
+                    0 EUR, which reads like a bug to a shopper.
+                -->
+                <span class="font-medium text-default" *ngIf="!vm.shipping">{{ 'cart.shippingFree' | translate }}</span>
+                <span class="font-medium text-default" *ngIf="vm.shipping">{{ vm.shipping | currency }}</span>
+            </div>
+            <div class="flex items-center justify-between mt-3 pt-3 text-lg font-bold border-t text-default">
+                <span>{{ 'cart.total' | translate }}</span>
+                <span>{{ vm.total | currency }}</span>
+            </div>
+
+            <button
+                class="w-full mt-4 bg-white text-gray-900 hover:bg-gray-100"
+                mat-flat-button
+                (click)="checkout.emit()">
+                {{ 'cart.checkout' | translate }}
+            </button>
+
+            <button
+                class="w-full mt-2"
+                mat-button
+                (click)="clear()">
+                <span class="text-secondary">{{ 'cart.clear' | translate }}</span>
+            </button>
+        </div>
+
+    </ng-container>
+
+</div>

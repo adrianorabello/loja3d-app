@@ -1,0 +1,91 @@
+.home-catalog {
+    padding: 4.25rem 1.5rem 5rem;
+    background: #fffdf4;
+
+    &__inner {
+        width: min(100%, 1180px);
+        margin: 0 auto;
+    }
+
+    &__heading {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 2rem;
+        margin-bottom: 2rem;
+
+        h2 {
+            margin: .55rem 0 0;
+            color: #397d16;
+            font-size: clamp(1.7rem, 3vw, 2.5rem);
+            font-weight: 900;
+            letter-spacing: -.025em;
+            line-height: 1.15;
+        }
+
+        > p {
+            max-width: 420px;
+            margin: 0;
+            color: #5a6350;
+            line-height: 1.65;
+        }
+    }
+
+    &__grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        align-items: stretch;
+        gap: 1.25rem;
+    }
+
+    &__empty {
+        padding: 2.5rem 1rem;
+        border: 1px dashed #d7ddce;
+        border-radius: 20px;
+        color: #5a6350;
+        text-align: center;
+    }
+}
+
+.home-catalog .home-eyebrow {
+    margin: 0;
+    color: #397d16;
+    font-size: .78rem;
+    font-weight: 900;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+:host ::ng-deep product-card .home-product-card {
+    min-width: 0;
+}
+
+@media (max-width: 1080px) {
+    .home-catalog__grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 840px) {
+    .home-catalog {
+        padding: 3.5rem 1.25rem;
+
+        &__grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+}
+
+@media (max-width: 600px) {
+    .home-catalog__heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: .75rem;
+    }
+}
+
+@media (max-width: 380px) {
+    .home-catalog__grid {
+        grid-template-columns: 1fr;
+    }
+}

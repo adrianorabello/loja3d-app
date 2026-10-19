@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRouteSnapshot, Resolve, RouterStateSnapshot } from '@angular/router';
-import { forkJoin, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { forkJoin, Observable, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { InitialData } from 'app/app.types';
 import { User } from 'app/core/user/user.model';
 import { filterNavigationByRole } from 'app/core/navigation/navigation.utils';
@@ -41,11 +41,11 @@ export class InitialDataResolver implements Resolve<any>
     {
         // Fork join multiple API endpoint calls to wait all of them to finish
         return forkJoin([
-            this._httpClient.get<any>('api/common/messages'),
-            this._httpClient.get<any>('api/common/navigation'),
-            this._httpClient.get<any>('api/common/notifications'),
-            this._httpClient.get<any>('api/common/shortcuts'),
-            this._httpClient.get<User>('api/common/user')
+            this._httpClient.get<any>('api/common/messages').pipe(catchError(() => of([]))),
+            this._httpClient.get<any>('api/common/navigation').pipe(catchError(() => of({default: [], compact: [], futuristic: [], horizontal: []}))),
+            this._httpClient.get<any>('api/common/notifications').pipe(catchError(() => of([]))),
+            this._httpClient.get<any>('api/common/shortcuts').pipe(catchError(() => of([]))),
+            this._httpClient.get<User>('api/common/user').pipe(catchError(() => of(null)))
         ]).pipe(
             map(([messages, navigation, notifications, shortcuts, user]) => {
 

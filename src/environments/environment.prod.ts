@@ -1,12 +1,15 @@
+// Safe defaults. `scripts/set-env.js` (npm run build:vercel) rewrites this file from
+// APP_ENV / API_URL / USE_MOCK_API before the production build.
 export const environment = {
     production: true,
+    name: 'prod',
 
     /**
-     * Kept true until a real backend exists, so production builds of this MVP remain
-     * demonstrable. Flip to false — and point `apiBaseUrl` at the real service — as
-     * the first step of backend integration.
+     * Absolute origin of the backend (no trailing slash). Empty keeps relative URLs.
      */
-    useMockApi: true,
+    apiOrigin: '',
+
+    useMockApi: false,
 
     /**
      * Base URL every Clara Rosa service builds its endpoints from, injected as

@@ -1,5 +1,5 @@
 {
-    "name": "@fuse/demo",
+    "name": "loja3d-app",
     "version": "12.2.0",
     "license": "https://themeforest.net/licenses/standard",
     "private": true,
@@ -7,9 +7,15 @@
         "ng": "node scripts/ng-compat.js",
         "start": "node scripts/ng-compat.js serve --port 4201",
         "build": "node scripts/ng-compat.js build --prod",
+        "build:dev": "APP_ENV=dev node scripts/set-env.js && node scripts/ng-compat.js build --prod",
+        "build:prod": "APP_ENV=prod node scripts/set-env.js && node scripts/ng-compat.js build --prod",
+        "build:vercel": "node scripts/set-env.js && node scripts/ng-compat.js build --prod",
         "test": "node scripts/ng-compat.js test",
         "lint": "node scripts/ng-compat.js lint",
         "e2e": "node scripts/ng-compat.js e2e"
+    },
+    "engines": {
+        "node": ">=16 <23"
     },
     "dependencies": {
         "@angular/animations": "11.2.12",
@@ -36,6 +42,7 @@
         "apexcharts": "3.26.1",
         "crypto-js": "3.3.0",
         "highlight.js": "10.7.2",
+        "libphonenumber-js": "^1.12.10",
         "lodash-es": "4.17.21",
         "moment": "2.29.1",
         "ng-apexcharts": "1.5.9",

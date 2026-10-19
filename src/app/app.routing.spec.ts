@@ -105,6 +105,43 @@ describe('appRoutes', () => {
             expect(emptyIndex).toBe(children.length - 1);
         });
 
+        it('should expose the catalogue and product detail as children', () => {
+            const paths = storefrontBlock().children.map(child => child.path);
+
+            expect(paths).toContain('products');
+            expect(paths).toContain('products/:slug');
+        });
+
+        // Both are prefix matches. A bare `products` carrying loadChildren would consume
+        // the first segment of /products/<slug> and hand the remainder to a child config
+        // that cannot match it, so the more specific route must come first.
+        it('should order products/:slug before the bare products route', () => {
+            const paths = storefrontBlock().children.map(child => child.path);
+
+            expect(paths.indexOf('products/:slug')).toBeLessThan(paths.indexOf('products'));
+        });
+
+        it('should place both product routes above the empty-path home route', () => {
+            const paths = storefrontBlock().children.map(child => child.path);
+            const home = paths.indexOf('');
+
+            expect(paths.indexOf('products/:slug')).toBeLessThan(home);
+            expect(paths.indexOf('products')).toBeLessThan(home);
+        });
+
+        // The whole point of putting them in THIS block: a shopper must be able to browse
+        // and build a cart without ever being bounced to /sign-in.
+        it('should leave the product routes unguarded', () => {
+            const products = storefrontBlock().children
+                .filter(child => child.path?.startsWith('products'));
+
+            expect(products.length).toBe(2);
+            products.forEach((child) => {
+                expect(child.canActivate).toBeUndefined();
+                expect(child.resolve).toBeUndefined();
+            });
+        });
+
         // pathMatch 'full' requires consuming the whole remaining URL, which a route
         // carrying loadChildren cannot do — combining them makes the branch fail to match.
         it('should not combine pathMatch full with loadChildren', () => {
@@ -154,6 +191,27 @@ describe('appRoutes', () => {
         it('should resolve initial data for the admin shell', () => {
             expect(adminBlock().resolve.initialData).toBe(InitialDataResolver);
         });
+
+        it('should expose the protected product list, create, and edit feature instead of the canary', () => {
+            const children = adminBlock().children;
+            const productsRoute = children.find(child => child.path === 'products');
+
+            expect(children.map(child => child.path)).not.toContain('example');
+            expect(productsRoute).toBeDefined();
+            expect(productsRoute.loadChildren).toBeDefined();
+        });
+    });
+
+    describe('customer account block', () => {
+
+        it('should protect customer profile routes with AuthGuard and use the storefront layout', () => {
+            const block = findBlock(route => route.path === 'account');
+
+            expect(block).toBeDefined();
+            expect(block.canActivateChild).toContain(AuthGuard);
+            expect(block.data.layout).toBe('storefront');
+            expect(block.children.map(child => child.path)).toContain('profile');
+        });
     });
 
     describe('auth blocks', () => {
@@ -169,7 +227,15 @@ describe('appRoutes', () => {
             expect(paths).toContain('sign-up');
             expect(paths).toContain('forgot-password');
             expect(paths).toContain('reset-password');
-            expect(paths).toContain('confirmation-required');
+        });
+
+        it('should serve confirmation-required without NoAuthGuard so signed-in users can confirm', () => {
+            const block = findBlock(route =>
+                route.data?.layout === 'empty'
+                && !route.canActivate
+                && route.children?.some(child => child.path === 'confirmation-required'));
+
+            expect(block).toBeDefined();
         });
 
         it('should keep sign-out and unlock-session behind AuthGuard', () => {

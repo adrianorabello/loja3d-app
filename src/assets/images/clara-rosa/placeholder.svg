@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Clara Rosa product placeholder artwork: generic product placeholder
+    Hand-authored in-repo so there is no third-party licence to honour and no network
+    dependency in tests. viewBox is exactly square (400x400) so `object-cover` never crops
+    and the catalogue's 1:1 aspect box never shifts.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400" role="img">
+  <defs>
+    <linearGradient id="plate" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f1f5f9"/>
+      <stop offset="1" stop-color="#e2e8f0"/>
+    </linearGradient>
+    <!-- Horizontal hairlines, echoing 3D-print layer lines. -->
+    <pattern id="layers" width="400" height="6" patternUnits="userSpaceOnUse">
+      <rect width="400" height="6" fill="none"/>
+      <line x1="0" y1="5.5" x2="400" y2="5.5" stroke="#0f172a" stroke-opacity="0.05" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="400" height="400" fill="url(#plate)"/>
+  <rect width="400" height="400" fill="url(#layers)"/>
+  <g fill="none" stroke="#94a3b8" stroke-width="7" stroke-linejoin="round" stroke-linecap="round">
+    <rect x="112" y="128" width="176" height="144" rx="18"/>
+    <circle cx="164" cy="178" r="16" fill="#cbd5e1" stroke="none"/>
+    <path d="M128 252l54-56 42 40 26-24 34 40"/>
+  </g>
+</svg>

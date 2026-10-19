@@ -44,3 +44,9 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+
+# deployment
+.env
+.env.*
+!.env.example
+.vercel

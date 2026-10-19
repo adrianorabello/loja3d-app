@@ -1,0 +1,16 @@
+<div class="home-hero-visual" role="img" [attr.aria-label]="'home.landing.visualLabel' | translate">
+    <span class="home-hero-visual__orbit home-hero-visual__orbit--one" aria-hidden="true"></span>
+    <span class="home-hero-visual__orbit home-hero-visual__orbit--two" aria-hidden="true"></span>
+    <div
+        class="home-hero-visual__card"
+        *ngFor="let product of products | slice:0:3; let i = index; trackBy: trackById"
+        [ngClass]="'home-hero-visual__card--' + tone(i)">
+        <img
+            [src]="image(product)"
+            [alt]="product.name | localizedText"
+            (error)="onImageError($event)">
+    </div>
+    <div class="home-hero-visual__empty" *ngIf="!products.length" aria-hidden="true">
+        <mat-icon [svgIcon]="'heroicons_outline:cube'"></mat-icon>
+    </div>
+</div>

@@ -10,11 +10,27 @@
  */
 export type UserRole = 'ADMIN' | 'CUSTOMER';
 
+export interface UserAddress
+{
+    id: string;
+    label: string;
+    street: string;
+    unit?: string;
+    postalCode: string;
+    city: string;
+    country: string;
+}
+
 export interface User
 {
     id: string;
     name: string;
     email: string;
+    dateOfBirth?: string;
+    phone?: string;
+    phoneCountry?: string;
+    emailVerified?: boolean;
+    addresses?: UserAddress[];
     avatar?: string;
     status?: string;
 

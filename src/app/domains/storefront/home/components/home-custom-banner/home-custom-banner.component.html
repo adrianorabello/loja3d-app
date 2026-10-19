@@ -1,0 +1,17 @@
+<section class="home-custom-banner" aria-labelledby="home-custom-title">
+    <div class="home-custom-banner__icon" aria-hidden="true">
+        <mat-icon [svgIcon]="'heroicons_outline:sparkles'"></mat-icon>
+    </div>
+    <div class="home-custom-banner__copy">
+        <p class="home-custom-banner__eyebrow">{{ 'home.custom.eyebrow' | translate }}</p>
+        <h2 id="home-custom-title">{{ 'home.custom.title' | translate }}</h2>
+        <p>{{ 'home.custom.body' | translate }}</p>
+    </div>
+    <button
+        mat-flat-button
+        class="home-custom-banner__button"
+        (click)="requestQuote.emit()">
+        {{ 'home.custom.action' | translate }}
+        <mat-icon [svgIcon]="'heroicons_outline:arrow-narrow-right'" aria-hidden="true"></mat-icon>
+    </button>
+</section>

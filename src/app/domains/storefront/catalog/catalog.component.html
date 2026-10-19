@@ -1,0 +1,179 @@
+<!--
+    Scoped dark surface.
+
+    The single `dark` class below is all that is needed, because TWO mechanisms already key
+    off a bare `.dark` ancestor:
+
+      1. `src/@fuse/tailwind/plugins/theming.js` emits `body.dark, .dark, .light .dark`,
+         which sets the --fuse-* custom properties (bg-card, bg-default, text-default,
+         text-secondary, border, ...) for this subtree.
+      2. `src/@fuse/styles/themes.scss` emits `body.dark, body .dark`, which includes
+         angular-material-theme($dark-theme) — so mat-button, mat-form-field, mat-select and
+         friends theme themselves dark in here with no custom CSS at all.
+
+    Plus `darkMode: 'class'` in tailwind.config.js, so `dark:` variants respond too, and
+    `purge.safelist.deep` already lists /^dark/ so the class survives a production build.
+
+    The consequence is that `appConfig.scheme` stays 'light': the storefront header above and
+    footer below this element remain light, and nothing outside this subtree changes.
+
+    ONE GOTCHA, and it is the easiest thing to forget here: CDK overlays are appended to
+    <body>, OUTSIDE this subtree. Any mat-select panel, dialog or snackbar opened from this
+    page must carry [panelClass]="'dark'" or it will render light. Both selects below do.
+-->
+<div class="dark flex flex-col flex-auto w-full bg-default">
+
+    <!-- Page header -->
+    <div class="w-full max-w-7xl mx-auto px-4 md:px-6 pt-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-default">
+            {{ 'catalog.title' | translate }}
+        </h1>
+        <p class="mt-1 text-secondary">{{ 'catalog.subtitle' | translate }}</p>
+    </div>
+
+    <!--
+        Grid + panel row.
+
+        `relative overflow-hidden` is required by fuse-drawer's `over` mode, which positions
+        itself absolutely within this element when not fixed.
+    -->
+    <div class="flex flex-auto w-full max-w-7xl mx-auto px-4 md:px-6 py-6 relative overflow-hidden">
+
+        <!--
+            `min-w-0` is load-bearing, not decoration. Flex items default to
+            `min-width: auto` and refuse to shrink below their content, which is the usual
+            cause of horizontal page scroll once the 320px drawer claims its space.
+        -->
+        <div class="flex flex-col flex-auto min-w-0">
+
+            <!-- Filter bar -->
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+
+                <!--
+                    In-page search, bound to the same `?q=` the storefront header writes, so
+                    the two can never disagree and a result set stays shareable.
+                -->
+                <mat-form-field class="flex-auto fuse-mat-dense fuse-mat-no-subscript" [floatLabel]="'always'">
+                    <mat-label>{{ 'catalog.searchPlaceholder' | translate }}</mat-label>
+                    <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_outline:search'"></mat-icon>
+                    <input
+                        id="catalog-search"
+                        matInput
+                        [formControl]="searchControl"
+                        [autocomplete]="'off'">
+                </mat-form-field>
+
+                <!-- Category -->
+                <mat-form-field class="sm:w-56 fuse-mat-dense fuse-mat-no-subscript">
+                    <mat-label>{{ 'catalog.category' | translate }}</mat-label>
+                    <mat-select
+                        [value]="activeCategoryId"
+                        [panelClass]="'dark'"
+                        (selectionChange)="setCategory($event.value)">
+                        <mat-option [value]="''">{{ 'catalog.allCategories' | translate }}</mat-option>
+                        <mat-option
+                            *ngFor="let category of categories$ | async"
+                            [value]="category.id">
+                            {{ category.name | localizedText }}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+
+                <!-- Sort -->
+                <mat-form-field class="sm:w-56 fuse-mat-dense fuse-mat-no-subscript">
+                    <mat-label>{{ 'catalog.sortBy' | translate }}</mat-label>
+                    <mat-select
+                        [value]="activeSort"
+                        [panelClass]="'dark'"
+                        (selectionChange)="setSort($event.value)">
+                        <mat-option [value]="'newest'">{{ 'catalog.sortNewest' | translate }}</mat-option>
+                        <mat-option [value]="'name-asc'">{{ 'catalog.sortNameAsc' | translate }}</mat-option>
+                        <mat-option [value]="'name-desc'">{{ 'catalog.sortNameDesc' | translate }}</mat-option>
+                        <mat-option [value]="'price-asc'">{{ 'catalog.sortPriceAsc' | translate }}</mat-option>
+                        <mat-option [value]="'price-desc'">{{ 'catalog.sortPriceDesc' | translate }}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+
+                <!--
+                    Cart toggle, page-local on purpose. The storefront header's cart icon
+                    points at the future /cart route; wiring it to this drawer would need a
+                    cross-component channel for the benefit of one page.
+                -->
+                <button
+                    class="flex-0 self-start sm:self-auto"
+                    mat-stroked-button
+                    [attr.aria-label]="'cart.title' | translate"
+                    (click)="cartPanelOpen = !cartPanelOpen">
+                    <mat-icon
+                        class="icon-size-5"
+                        [matBadge]="cartCount"
+                        [matBadgeHidden]="cartCount === 0"
+                        [matBadgeColor]="'accent'"
+                        [matBadgeSize]="'small'"
+                        [svgIcon]="'heroicons_outline:shopping-bag'"></mat-icon>
+                    <span class="ml-2">{{ 'cart.title' | translate }}</span>
+                </button>
+            </div>
+
+            <!-- Transient add-to-cart feedback -->
+            <div class="mt-4 text-sm font-medium text-teal-300" *ngIf="message">
+                {{ message | translate: messageParams }}
+            </div>
+
+            <ng-container *ngIf="products$ | async as products">
+
+                <!-- Result count -->
+                <div class="mt-4 text-sm text-secondary" *ngIf="products.length">
+                    {{ 'catalog.resultCount' | translate: {count: products.length} }}
+                </div>
+
+                <!--
+                    Responsive grid. Column counts account for the 320px panel stealing width
+                    from 960px up: two columns from 600, three only from 1280 where roughly
+                    960px of content width remains. Never pinned to one viewport.
+                -->
+                <div
+                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mt-4"
+                    *ngIf="products.length">
+                    <product-card
+                        *ngFor="let product of products; trackBy: trackByFn"
+                        [product]="product"
+                        (addToCart)="addToCart($event)"></product-card>
+                </div>
+
+                <!-- Empty state -->
+                <empty-state
+                    *ngIf="!products.length"
+                    [icon]="'heroicons_outline:search'"
+                    [titleKey]="'catalog.noResultsTitle'"
+                    [bodyKey]="'catalog.noResultsBody'"
+                    [actionKey]="'catalog.clearFilters'"
+                    (action)="clearFilters()"></empty-state>
+
+            </ng-container>
+        </div>
+
+        <!--
+            Cart panel.
+
+            `side` composes as a real in-flow right column; `over` + `fixed` promotes it to
+            position:fixed with z-index 300, above the storefront's sticky header, which is
+            what an overlay needs. Both bind to the same boolean so there is one source of
+            truth for the mode.
+        -->
+        <fuse-drawer
+            class="flex-0"
+            [name]="'cartPanel'"
+            [position]="'right'"
+            [mode]="isScreenSmall ? 'over' : 'side'"
+            [fixed]="isScreenSmall"
+            [opened]="cartPanelOpen"
+            (openedChanged)="cartPanelOpen = $event">
+            <cart-panel
+                [isOverlay]="isScreenSmall"
+                (closeRequested)="cartPanelOpen = false"
+                (checkout)="goToCheckout()"></cart-panel>
+        </fuse-drawer>
+
+    </div>
+</div>

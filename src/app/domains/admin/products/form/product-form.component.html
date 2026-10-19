@@ -1,0 +1,369 @@
+<div class="flex flex-col flex-auto min-w-0">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row flex-0 sm:items-center sm:justify-between py-8 px-6 md:px-8 border-b bg-card dark:bg-transparent">
+        <div>
+            <a
+                class="inline-flex items-center -ml-1.5 text-secondary hover:underline"
+                [routerLink]="'/admin/products'">
+                <mat-icon
+                    class="icon-size-5"
+                    [svgIcon]="'heroicons_solid:chevron-left'"></mat-icon>
+                <span class="ml-1">{{ 'common.back' | translate }}</span>
+            </a>
+            <h1 class="mt-2 text-4xl font-extrabold tracking-tight">
+                {{ (isEdit ? 'admin.products.editProduct' : 'admin.products.newProduct') | translate }}
+            </h1>
+        </div>
+    </div>
+
+    <form
+        class="flex flex-col flex-auto w-full max-w-4xl p-6 md:p-8"
+        novalidate
+        [formGroup]="form"
+        (ngSubmit)="save()">
+
+        <!-- Save error -->
+        <fuse-alert
+            class="mb-6"
+            *ngIf="saveError"
+            [appearance]="'outline'"
+            [type]="'error'">
+            {{ saveError | translate }}
+        </fuse-alert>
+
+        <div class="flex flex-col p-6 bg-card shadow rounded-2xl">
+
+            <!-- Names -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
+                <mat-form-field>
+                    <mat-label>{{ 'productForm.namePt' | translate }}</mat-label>
+                    <input
+                        id="namePt"
+                        matInput
+                        [formControlName]="'namePt'">
+                    <mat-error *ngIf="form.get('namePt').hasError('required')">
+                        {{ 'validation.required' | translate }}
+                    </mat-error>
+                </mat-form-field>
+                <mat-form-field>
+                    <mat-label>{{ 'productForm.nameEn' | translate }}</mat-label>
+                    <input
+                        id="nameEn"
+                        matInput
+                        [formControlName]="'nameEn'">
+                </mat-form-field>
+            </div>
+
+            <!-- Slug -->
+            <mat-form-field>
+                <mat-label>{{ 'productForm.slug' | translate }}</mat-label>
+                <input
+                    id="slug"
+                    matInput
+                    [formControlName]="'slug'">
+                <mat-hint>{{ 'productForm.slugHint' | translate }}</mat-hint>
+                <mat-error *ngIf="form.get('slug').hasError('required')">
+                    {{ 'validation.required' | translate }}
+                </mat-error>
+                <mat-error *ngIf="form.get('slug').hasError('pattern')">
+                    {{ 'validation.pattern' | translate }}
+                </mat-error>
+            </mat-form-field>
+
+            <!-- Descriptions -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 mt-2">
+                <mat-form-field>
+                    <mat-label>{{ 'productForm.descriptionPt' | translate }}</mat-label>
+                    <textarea
+                        id="descriptionPt"
+                        matInput
+                        rows="4"
+                        [formControlName]="'descriptionPt'"></textarea>
+                </mat-form-field>
+                <mat-form-field>
+                    <mat-label>{{ 'productForm.descriptionEn' | translate }}</mat-label>
+                    <textarea
+                        id="descriptionEn"
+                        matInput
+                        rows="4"
+                        [formControlName]="'descriptionEn'"></textarea>
+                </mat-form-field>
+            </div>
+
+            <!-- Category, price, stock -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-x-6">
+                <mat-form-field>
+                    <mat-label>{{ 'productForm.category' | translate }}</mat-label>
+                    <mat-select
+                        id="categoryId"
+                        [formControlName]="'categoryId'">
+                        <mat-option
+                            *ngFor="let category of categories$ | async"
+                            [value]="category.id">
+                            {{ category.name | localizedText }}
+                        </mat-option>
+                    </mat-select>
+                    <mat-error *ngIf="form.get('categoryId').hasError('required')">
+                        {{ 'validation.required' | translate }}
+                    </mat-error>
+                </mat-form-field>
+                <mat-form-field>
+                    <mat-label>{{ 'productForm.price' | translate }}</mat-label>
+                    <span matPrefix class="mr-1">€</span>
+                    <input
+                        id="price"
+                        matInput
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        [formControlName]="'price'">
+                    <mat-error *ngIf="form.get('price').hasError('required')">
+                        {{ 'validation.required' | translate }}
+                    </mat-error>
+                    <mat-error *ngIf="form.get('price').hasError('min')">
+                        {{ 'validation.positiveNumber' | translate }}
+                    </mat-error>
+                </mat-form-field>
+                <mat-form-field>
+                    <mat-label>{{ 'productForm.stock' | translate }}</mat-label>
+                    <input
+                        id="stock"
+                        matInput
+                        type="number"
+                        min="0"
+                        step="1"
+                        [formControlName]="'stock'">
+                    <mat-error *ngIf="form.get('stock').hasError('required')">
+                        {{ 'validation.required' | translate }}
+                    </mat-error>
+                    <mat-error *ngIf="form.get('stock').hasError('min')">
+                        {{ 'validation.min' | translate: {min: 0} }}
+                    </mat-error>
+                    <mat-error *ngIf="!form.get('stock').hasError('min') && form.get('stock').hasError('pattern')">
+                        {{ 'validation.integer' | translate }}
+                    </mat-error>
+                </mat-form-field>
+            </div>
+
+            <!-- Optional dimensions must be supplied as a complete set. -->
+            <div class="mt-2">
+                <h2 class="mb-2 text-lg font-semibold">{{ 'productForm.dimensions' | translate }}</h2>
+                <div
+                    class="grid grid-cols-1 sm:grid-cols-3 gap-x-6"
+                    [formGroupName]="'dimensions'">
+                    <mat-form-field>
+                        <mat-label>{{ 'productForm.widthMm' | translate }}</mat-label>
+                        <input
+                            id="width"
+                            matInput
+                            type="number"
+                            min="0.01"
+                            step="0.01"
+                            [formControlName]="'width'">
+                        <mat-error *ngIf="form.get('dimensions.width').hasError('min')">
+                            {{ 'validation.positiveNumber' | translate }}
+                        </mat-error>
+                    </mat-form-field>
+                    <mat-form-field>
+                        <mat-label>{{ 'productForm.heightMm' | translate }}</mat-label>
+                        <input
+                            id="height"
+                            matInput
+                            type="number"
+                            min="0.01"
+                            step="0.01"
+                            [formControlName]="'height'">
+                        <mat-error *ngIf="form.get('dimensions.height').hasError('min')">
+                            {{ 'validation.positiveNumber' | translate }}
+                        </mat-error>
+                    </mat-form-field>
+                    <mat-form-field>
+                        <mat-label>{{ 'productForm.depthMm' | translate }}</mat-label>
+                        <input
+                            id="depth"
+                            matInput
+                            type="number"
+                            min="0.01"
+                            step="0.01"
+                            [formControlName]="'depth'">
+                        <mat-error *ngIf="form.get('dimensions.depth').hasError('min')">
+                            {{ 'validation.positiveNumber' | translate }}
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+                <div
+                    class="text-sm text-warn"
+                    role="alert"
+                    *ngIf="submitted && form.get('dimensions').hasError('incompleteDimensions')">
+                    {{ 'productForm.completeDimensions' | translate }}
+                </div>
+            </div>
+
+            <!-- Flags -->
+            <div class="flex flex-col sm:flex-row sm:flex-wrap gap-4 sm:gap-8 mt-2">
+                <mat-slide-toggle
+                    [color]="'primary'"
+                    [formControlName]="'active'">
+                    {{ 'productForm.active' | translate }}
+                </mat-slide-toggle>
+                <mat-slide-toggle
+                    [color]="'primary'"
+                    [formControlName]="'madeToOrder'">
+                    {{ 'productForm.madeToOrder' | translate }}
+                </mat-slide-toggle>
+                <mat-slide-toggle
+                    [color]="'primary'"
+                    [formControlName]="'featured'">
+                    {{ 'productForm.featured' | translate }}
+                </mat-slide-toggle>
+            </div>
+        </div>
+
+        <!-- Colours -->
+        <div class="flex flex-col mt-8 p-6 bg-card shadow rounded-2xl">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg font-semibold">{{ 'productForm.colors' | translate }}</h2>
+                <button
+                    type="button"
+                    mat-stroked-button
+                    (click)="addColor()">
+                    <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                    <span class="ml-2">{{ 'productForm.addColor' | translate }}</span>
+                </button>
+            </div>
+
+            <div
+                class="mt-4"
+                [formArrayName]="'colors'">
+                <div
+                    class="flex items-start gap-4"
+                    *ngFor="let color of colors.controls; let i = index; trackBy: trackByIndex"
+                    [formGroupName]="i">
+                    <span
+                        class="flex-0 w-10 h-10 mt-3 rounded-full border"
+                        aria-hidden="true"
+                        [style.background-color]="color.get('hex').valid ? color.get('hex').value : 'transparent'"></span>
+                    <mat-form-field class="flex-auto">
+                        <mat-label>{{ 'productForm.colorName' | translate }}</mat-label>
+                        <input
+                            matInput
+                            [formControlName]="'name'">
+                        <mat-error *ngIf="color.get('name').hasError('required')">
+                            {{ 'validation.required' | translate }}
+                        </mat-error>
+                    </mat-form-field>
+                    <mat-form-field class="w-36">
+                        <mat-label>{{ 'productForm.colorHex' | translate }}</mat-label>
+                        <input
+                            matInput
+                            placeholder="#ffffff"
+                            [formControlName]="'hex'">
+                        <mat-error *ngIf="color.get('hex').invalid">
+                            {{ 'validation.pattern' | translate }}
+                        </mat-error>
+                    </mat-form-field>
+                    <button
+                        class="mt-3"
+                        type="button"
+                        mat-icon-button
+                        [attr.aria-label]="'common.delete' | translate"
+                        [matTooltip]="'common.delete' | translate"
+                        (click)="removeColor(i)">
+                        <mat-icon
+                            class="text-warn"
+                            [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Images -->
+        <div class="flex flex-col mt-8 p-6 bg-card shadow rounded-2xl">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-semibold">{{ 'productForm.images' | translate }}</h2>
+                    <div class="text-sm text-secondary">{{ 'productForm.imageHint' | translate }}</div>
+                </div>
+                <!-- Hidden native input behind a label, as in the demo's contact avatar upload. -->
+                <input
+                    id="product-images"
+                    class="absolute h-0 w-0 opacity-0 invisible pointer-events-none"
+                    type="file"
+                    multiple
+                    [accept]="'image/jpeg, image/png'"
+                    (change)="uploadImages(imageInput)"
+                    #imageInput>
+                <label
+                    class="flex items-center h-10 px-4 rounded-full border cursor-pointer hover:bg-hover"
+                    for="product-images"
+                    matRipple>
+                    <mat-icon [svgIcon]="'heroicons_outline:upload'"></mat-icon>
+                    <span class="ml-2">{{ 'productForm.addImages' | translate }}</span>
+                </label>
+            </div>
+
+            <div
+                class="mt-4 text-sm text-warn"
+                role="alert"
+                *ngFor="let error of imageErrors">
+                {{ error.key | translate: error.params }}
+            </div>
+
+            <div
+                class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4"
+                *ngIf="images.length > 0; else noImages">
+                <div
+                    class="relative aspect-w-1 aspect-h-1 rounded-lg overflow-hidden border bg-white"
+                    *ngFor="let image of images; let i = index; trackBy: trackByIndex">
+                    <img
+                        class="w-full h-full object-contain"
+                        [src]="image"
+                        alt="">
+                    <div class="flex items-start justify-end p-1">
+                        <button
+                            class="bg-card shadow"
+                            type="button"
+                            mat-icon-button
+                            [attr.aria-label]="'productForm.removeImage' | translate"
+                            [matTooltip]="'productForm.removeImage' | translate"
+                            (click)="removeImage(i)">
+                            <mat-icon
+                                class="icon-size-5 text-warn"
+                                [svgIcon]="'heroicons_outline:x'"></mat-icon>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <ng-template #noImages>
+                <div
+                    class="mt-4 text-sm"
+                    [class.text-warn]="submitted"
+                    [class.text-secondary]="!submitted">
+                    {{ 'productForm.noImages' | translate }}
+                </div>
+            </ng-template>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center justify-end mt-8">
+            <a
+                mat-button
+                [routerLink]="'/admin/products'">
+                {{ 'common.cancel' | translate }}
+            </a>
+            <button
+                class="ml-4"
+                type="submit"
+                mat-flat-button
+                [color]="'primary'"
+                [disabled]="form.disabled">
+                <span *ngIf="!form.disabled">{{ 'common.save' | translate }}</span>
+                <mat-progress-spinner
+                    *ngIf="form.disabled"
+                    [diameter]="24"
+                    [mode]="'indeterminate'"></mat-progress-spinner>
+            </button>
+        </div>
+    </form>
+</div>

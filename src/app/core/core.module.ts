@@ -7,7 +7,8 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { MatIconRegistry } from '@angular/material/icon';
 import { AuthService } from 'app/core/auth/auth.service';
 import { AuthInterceptor } from 'app/core/auth/auth.interceptor';
-import { API_BASE_URL } from 'app/core/api/api.config';
+import { API_BASE_URL, API_ORIGIN } from 'app/core/api/api.config';
+import { ApiOriginInterceptor } from 'app/core/api/api-origin.interceptor';
 import { I18nModule } from 'app/core/i18n/i18n.module';
 import { DEFAULT_LANGUAGE } from 'app/core/i18n/i18n.types';
 import { environment } from 'environments/environment';
@@ -27,8 +28,17 @@ registerLocaleData(localeEn);
         AuthService,
         {
             provide : HTTP_INTERCEPTORS,
+            useClass: ApiOriginInterceptor,
+            multi   : true
+        },
+        {
+            provide : HTTP_INTERCEPTORS,
             useClass: AuthInterceptor,
             multi   : true
+        },
+        {
+            provide : API_ORIGIN,
+            useValue: environment.apiOrigin
         },
         {
             provide : API_BASE_URL,

@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
+import { LocalizedTextPipe } from 'app/shared/pipes/localized-text.pipe';
 
 /**
  * Shared module.
@@ -11,23 +12,32 @@ import { TranslateModule } from '@ngx-translate/core';
  * presentational widgets live in `SharedComponentsModule` instead, so the Material
  * dependency stays opt-in.
  *
+ * `LocalizedTextPipe` is declared here rather than in `SharedComponentsModule` because it
+ * has no Material dependency, and the same reasoning that re-exports `TranslateModule`
+ * applies: product names are localized data and every feature that renders one already
+ * imports `SharedModule`.
+ *
  * `TranslateModule` is re-exported here (as a plain module, not `forChild`) because every
  * lazy feature module already imports `SharedModule`. That makes the `translate` pipe and
  * directive available application-wide with no per-module boilerplate, all sharing the
  * single root `TranslateService` configured by `I18nModule`.
  */
 @NgModule({
-    imports: [
+    declarations: [
+        LocalizedTextPipe
+    ],
+    imports     : [
         CommonModule,
         FormsModule,
         ReactiveFormsModule,
         TranslateModule
     ],
-    exports: [
+    exports     : [
         CommonModule,
         FormsModule,
         ReactiveFormsModule,
-        TranslateModule
+        TranslateModule,
+        LocalizedTextPipe
     ]
 })
 export class SharedModule

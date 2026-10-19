@@ -1,0 +1,37 @@
+<div class="flex gap-2">
+    <mat-form-field class="w-40 flex-none">
+        <mat-label>{{ 'phone.country' | translate }}</mat-label>
+        <mat-select
+            [value]="country"
+            [disabled]="disabled"
+            (selectionChange)="onCountryChange($event.value)"
+            (openedChange)="$event && filter('')"
+            (blur)="touched()">
+            <div class="px-3 pt-2 sticky top-0 bg-card z-10">
+                <input
+                    class="w-full border rounded px-2 py-1"
+                    type="search"
+                    [attr.aria-label]="'phone.search' | translate"
+                    [placeholder]="'phone.search' | translate"
+                    [ngModel]="search"
+                    (ngModelChange)="filter($event)"
+                    (keydown)="$event.stopPropagation()">
+            </div>
+            <mat-option *ngFor="let c of filtered; trackBy: trackByIso" [value]="c.iso">
+                <span aria-hidden="true">{{ c.flag }}</span> {{ c.name }} (+{{ c.dialCode }})
+            </mat-option>
+        </mat-select>
+    </mat-form-field>
+    <mat-form-field class="flex-auto">
+        <mat-label>{{ label || ('phone.number' | translate) }}</mat-label>
+        <input
+            matInput
+            type="tel"
+            autocomplete="tel-national"
+            [value]="national"
+            [disabled]="disabled"
+            (input)="onInput($any($event.target).value)"
+            (blur)="touched()">
+        <mat-error>{{ 'phone.invalid' | translate }}</mat-error>
+    </mat-form-field>
+</div>

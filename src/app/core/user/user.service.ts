@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, ReplaySubject } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { tap } from 'rxjs/operators';
 import { User } from 'app/core/user/user.model';
 
 @Injectable({
@@ -47,11 +47,10 @@ export class UserService
      *
      * @param user
      */
-    update(user: User): Observable<any>
+    update(user: User): Observable<User>
     {
         return this._httpClient.patch<User>('api/common/user', {user}).pipe(
-            map((response) => {
-                // Execute the observable
+            tap((response) => {
                 this._user.next(response);
             })
         );

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { cloneDeep } from 'lodash-es';
-import { User } from 'app/core/user/user.model';
+import { User, UserAddress } from 'app/core/user/user.model';
 import { credentials, MockCredential } from 'app/mock-api/clara-rosa/auth/data';
 import { user as adminUser } from 'app/mock-api/common/user/data';
 
@@ -51,6 +51,46 @@ export class MockSessionService
     set currentUser(value: User)
     {
         this._currentUser = value;
+    }
+
+    /**
+     * Update the profile bound to the active mock session. Identity and role are never
+     * taken from the request, and changed email addresses remain usable for this session.
+     *
+     * @param profile
+     */
+    updateCurrentUserProfile(
+        profile: Partial<Pick<User, 'name' | 'email' | 'dateOfBirth' | 'addresses'>>
+    ): User | null
+    {
+        const email = (profile.email ?? this._currentUser.email).trim();
+        const duplicateEmail = this._credentials.some(candidate =>
+            candidate.user.id !== this._currentUser.id
+            && candidate.email.toLowerCase() === email.toLowerCase()
+        );
+
+        if ( duplicateEmail )
+        {
+            return null;
+        }
+
+        this._currentUser = {
+            ...this._currentUser,
+            ...cloneDeep(profile),
+            id   : this._currentUser.id,
+            email,
+            role : this._currentUser.role
+        };
+
+        const credential = this._credentials.find(item => item.user.id === this._currentUser.id);
+
+        if ( credential )
+        {
+            credential.email = email;
+            credential.user = cloneDeep(this._currentUser);
+        }
+
+        return cloneDeep(this._currentUser);
     }
 
     // -----------------------------------------------------------------------------------------------------

@@ -1,0 +1,31 @@
+<section class="home-hero">
+    <div class="home-hero__inner">
+        <div class="home-hero__copy">
+            <p class="home-eyebrow">
+                <mat-icon [svgIcon]="'heroicons_outline:sparkles'" aria-hidden="true"></mat-icon>
+                {{ 'home.landing.eyebrow' | translate }}
+            </p>
+            <h1>
+                {{ 'home.landing.title' | translate }}
+                <span>{{ 'home.landing.titleAccent' | translate }}</span>
+            </h1>
+            <p class="home-hero__description">{{ 'home.landing.subtitle' | translate }}</p>
+            <div class="home-hero__actions">
+                <button mat-flat-button class="home-button home-button--primary" (click)="explore.emit()">
+                    <mat-icon [svgIcon]="'heroicons_outline:cube'" aria-hidden="true"></mat-icon>
+                    {{ 'home.landing.explore' | translate }}
+                </button>
+                <button mat-stroked-button class="home-button home-button--secondary" (click)="requestQuote.emit()">
+                    <mat-icon [svgIcon]="'heroicons_outline:sparkles'" aria-hidden="true"></mat-icon>
+                    {{ 'home.landing.custom' | translate }}
+                </button>
+            </div>
+            <p class="home-hero__note">
+                <mat-icon [svgIcon]="'heroicons_outline:check-circle'" aria-hidden="true"></mat-icon>
+                {{ 'home.landing.madeInPortugal' | translate }}
+            </p>
+        </div>
+
+        <home-hero-visual [products]="products"></home-hero-visual>
+    </div>
+</section>

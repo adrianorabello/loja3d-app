@@ -6,12 +6,22 @@ export const environment = {
     production: false,
 
     /**
-     * When true, `FuseMockApiModule` is registered and every Clara Rosa request is
-     * answered in-memory by the handlers in `app/mock-api/clara-rosa/`.
-     *
-     * Set to false to talk to a real backend at `apiBaseUrl`.
+     * Deployment target: `local`, `dev` or `prod`. Informational only.
      */
-    useMockApi: true,
+    name: 'local',
+
+    /**
+     * Absolute origin of the backend (no trailing slash). Empty keeps relative URLs, which
+     * `proxy.conf.json` forwards to the local FastAPI. Set per environment by
+     * `scripts/set-env.js` on deploy.
+     */
+    apiOrigin: '',
+
+    /**
+     * Set to false to talk to the real FastAPI backend on port 8000 (proxied via proxy.conf.json).
+     * Set to true to fallback to in-memory mock handlers.
+     */
+    useMockApi: false,
 
     /**
      * Base URL every Clara Rosa service builds its endpoints from, injected as

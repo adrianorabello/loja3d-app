@@ -30,28 +30,27 @@ import { FuseNavigationItem } from '@fuse/components/navigation';
  */
 const buildAdminNavigation = (): FuseNavigationItem[] => [
     {
-        id   : 'admin.dashboard',
-        title: 'Painel',
-        type : 'basic',
-        icon : 'heroicons_outline:chart-pie',
-        link : '/admin/dashboard',
-        meta : {roles: ['ADMIN']}
-    },
-    {
-        id   : 'admin.products',
-        title: 'Produtos',
-        type : 'basic',
-        icon : 'heroicons_outline:cube',
-        link : '/admin/products',
-        meta : {roles: ['ADMIN']}
-    },
-    {
-        id   : 'admin.orders',
-        title: 'Encomendas',
-        type : 'basic',
-        icon : 'heroicons_outline:clipboard-list',
-        link : '/admin/orders',
-        meta : {roles: ['ADMIN']}
+        id      : 'admin.products',
+        title   : 'Produtos',
+        type    : 'collapsable',
+        icon    : 'heroicons_outline:cube',
+        meta    : {roles: ['ADMIN']},
+        children: [
+            {
+                id   : 'admin.products.list',
+                title: 'Lista de produtos',
+                type : 'basic',
+                link : '/admin/products',
+                meta : {roles: ['ADMIN']}
+            },
+            {
+                id   : 'admin.products.new',
+                title: 'Adicionar produto',
+                type : 'basic',
+                link : '/admin/products/new',
+                meta : {roles: ['ADMIN']}
+            }
+        ]
     },
     {
         id   : 'admin.divider',

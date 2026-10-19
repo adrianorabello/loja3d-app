@@ -1,0 +1,101 @@
+<!--
+    Card surface. `h-full` plus `mt-auto` on the action block keeps every card in a grid row
+    the same height with its controls bottom-aligned, however long the product name runs.
+
+    Hover feedback is ring + shadow only, never `transform: scale` — scaling causes
+    sub-pixel reflow of neighbouring cards in a tight grid and fights the `overflow-hidden`
+    the drawer row needs.
+-->
+<div
+    class="flex flex-col h-full p-3 rounded-2xl border transition-shadow duration-200 hover:shadow-xl hover:ring-1"
+    [ngClass]="presentation === 'home'
+        ? 'home-product-card bg-white border-gray-200 shadow-sm hover:ring-green-700'
+        : 'bg-card hover:ring-teal-500'">
+
+    <!--
+        Light image plate inside the dark card. `bg-white` is scheme-independent, so it stays
+        light under the catalogue's `.dark` ancestor — which is precisely the look the design
+        calls for.
+
+        This wrapper link is mouse-only (`tabindex="-1"`, `aria-hidden`): the card already
+        exposes a button and a "view details" link, and a third tab stop with the same
+        destination and accessible name would just be noise for keyboard users.
+    -->
+    <a
+        class="block rounded-xl overflow-hidden bg-white"
+        tabindex="-1"
+        aria-hidden="true"
+        [routerLink]="['/products', product.slug]">
+        <div class="aspect-w-1 aspect-h-1">
+            <img
+                class="w-full h-full object-cover"
+                loading="lazy"
+                [src]="image"
+                [alt]="product.name | localizedText"
+                (error)="onImageError($event)">
+        </div>
+    </a>
+
+    <!-- Availability -->
+    <div class="mt-3">
+        <stock-badge [product]="product"></stock-badge>
+    </div>
+
+    <!-- Name. Mint/teal accent — teal-300 measures ~10:1 on bg-card. -->
+    <h3
+        class="mt-1 text-lg font-semibold leading-tight line-clamp-2"
+        [ngClass]="presentation === 'home' ? 'text-green-800' : 'text-teal-300'">
+        {{ product.name | localizedText }}
+    </h3>
+
+    <!-- Price. EUR + pt-PT come from CoreModule's DEFAULT_CURRENCY_CODE and LOCALE_ID. -->
+    <div
+        class="mt-1 text-xl font-bold"
+        [ngClass]="presentation === 'home' ? 'text-gray-900' : 'text-default'">
+        {{ product.price | currency }}
+    </div>
+
+    <p
+        *ngIf="presentation === 'home'"
+        class="mt-2 text-sm text-secondary line-clamp-3">
+        {{ product.description | localizedText }}
+    </p>
+
+    <p
+        *ngIf="presentation === 'home' && product.dimensions"
+        class="mt-2 text-sm text-secondary">
+        <mat-icon
+            class="mr-1 align-middle icon-size-4"
+            [svgIcon]="'heroicons_outline:cube'"></mat-icon>
+        {{ 'home.catalog.dimensions' | translate }}:
+        {{ product.dimensions.width }} × {{ product.dimensions.height }} ×
+        {{ product.dimensions.depth }} {{ product.dimensions.unit }}
+    </p>
+
+    <!-- Actions -->
+    <div class="flex flex-col mt-auto pt-4">
+        <!--
+            White add button. Styled with Tailwind utilities rather than [color]="'primary'"
+            because `important: true` in tailwind.config.js means they beat Material's theme
+            CSS with no ::ng-deep and no !important of our own.
+        -->
+        <button
+            class="w-full"
+            [ngClass]="presentation === 'home'
+                ? 'bg-green-700 text-white hover:bg-green-800'
+                : 'bg-white text-gray-900 hover:bg-gray-100'"
+            mat-flat-button
+            [disabled]="!canAdd"
+            (click)="addToCart.emit(product)">
+            {{ 'catalog.addToCart' | translate }}
+        </button>
+
+        <a
+            class="self-center mt-2 text-sm hover:underline"
+            [ngClass]="presentation === 'home' ? 'text-green-800 hover:text-green-900' : 'text-secondary hover:text-teal-300'"
+            [routerLink]="['/products', product.slug]">
+            {{ 'catalog.viewDetails' | translate }}
+        </a>
+    </div>
+
+</div>

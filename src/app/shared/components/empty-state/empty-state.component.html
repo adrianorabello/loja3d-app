@@ -1,0 +1,23 @@
+<div class="flex flex-col items-center justify-center py-16 px-6 text-center">
+
+    <div class="flex items-center justify-center w-16 h-16 rounded-full bg-card border">
+        <mat-icon class="icon-size-8 text-hint" [svgIcon]="icon"></mat-icon>
+    </div>
+
+    <div class="mt-6 text-2xl font-semibold tracking-tight text-default" *ngIf="titleKey">
+        {{ titleKey | translate }}
+    </div>
+
+    <div class="mt-2 max-w-md text-secondary" *ngIf="bodyKey">
+        {{ bodyKey | translate }}
+    </div>
+
+    <button
+        class="mt-6"
+        *ngIf="actionKey"
+        mat-stroked-button
+        (click)="action.emit()">
+        {{ actionKey | translate }}
+    </button>
+
+</div>

@@ -12,24 +12,27 @@
                 [routerLink]="'/'"
                 (click)="closeMobileMenu()">
                 <img
-                    class="w-8 h-8 sm:w-9 sm:h-9"
-                    src="assets/images/clara-rosa/logo.svg"
-                    alt="Clara Rosa">
-                <div class="hidden sm:flex flex-col ml-3 leading-none">
-                    <span class="text-lg font-semibold tracking-tight">{{ 'common.appName' | translate }}</span>
-                    <span class="text-sm text-secondary">{{ 'common.appTagline' | translate }}</span>
-                </div>
+                    class="h-8 sm:h-9 w-auto"
+                    src="assets/images/logo/printoy-purple.svg"
+                    alt="Printoy 3D">
             </a>
 
             <!-- Desktop navigation -->
-            <nav class="hidden md:flex items-center ml-8 space-x-1">
+            <nav class="hidden md:flex items-center ml-8 space-x-2">
                 <a
                     *ngFor="let item of navigation; trackBy: trackByFn"
-                    class="px-3 py-2 rounded-md font-medium text-secondary hover:text-primary hover:bg-hover"
+                    class="px-4 py-1.5 rounded-xl font-medium text-secondary hover:text-primary hover:bg-hover transition-colors"
                     [routerLink]="item.link"
                     [routerLinkActive]="'text-primary bg-primary-50 dark:bg-primary-900 dark:bg-opacity-20'"
                     [routerLinkActiveOptions]="{exact: !!item.exactMatch}">
                     {{ item.title | translate }}
+                </a>
+                <a
+                    *ngIf="canSeeAdmin(user$ | async)"
+                    class="px-4 py-1.5 rounded-xl font-medium text-secondary hover:text-primary hover:bg-hover transition-colors"
+                    [routerLink]="'/admin/products'"
+                    [routerLinkActive]="'text-primary bg-primary-50 dark:bg-primary-900 dark:bg-opacity-20'">
+                    {{ 'nav.adminArea' | translate }}
                 </a>
             </nav>
 
@@ -114,6 +117,14 @@
                         <mat-divider class="my-1"></mat-divider>
                         <a
                             mat-menu-item
+                            [routerLink]="'/account/profile'">
+                            <mat-icon
+                                class="icon-size-5"
+                                [svgIcon]="'heroicons_outline:user-circle'"></mat-icon>
+                            <span>{{ 'nav.profile' | translate }}</span>
+                        </a>
+                        <a
+                            mat-menu-item
                             [routerLink]="'/account/orders'">
                             <mat-icon
                                 class="icon-size-5"
@@ -123,7 +134,7 @@
                         <a
                             mat-menu-item
                             *ngIf="canSeeAdmin(user)"
-                            [routerLink]="'/admin/dashboard'">
+                            [routerLink]="'/admin/products'">
                             <mat-icon
                                 class="icon-size-5"
                                 [svgIcon]="'heroicons_outline:cog'"></mat-icon>
@@ -203,6 +214,16 @@
                         [svgIcon]="item.icon"></mat-icon>
                     {{ item.title | translate }}
                 </a>
+                <a
+                    *ngIf="canSeeAdmin(user$ | async)"
+                    class="flex items-center px-3 py-2.5 rounded-md font-medium text-primary hover:bg-hover"
+                    [routerLink]="'/admin/products'"
+                    (click)="closeMobileMenu()">
+                    <mat-icon
+                        class="icon-size-5 mr-3 text-primary"
+                        [svgIcon]="'heroicons_outline:cog'"></mat-icon>
+                    {{ 'nav.adminArea' | translate }}
+                </a>
             </div>
         </div>
     </header>
@@ -222,10 +243,9 @@
             <div class="flex flex-col md:w-1/3">
                 <div class="flex items-center">
                     <img
-                        class="w-8 h-8"
-                        src="assets/images/clara-rosa/logo.svg"
-                        alt="Clara Rosa">
-                    <span class="ml-3 text-lg font-semibold tracking-tight">{{ 'common.appName' | translate }}</span>
+                        class="h-8 w-auto"
+                        src="assets/images/logo/printoy-purple.svg"
+                        alt="Printoy 3D">
                 </div>
                 <p class="mt-3 text-secondary">{{ 'home.footerTagline' | translate }}</p>
             </div>
@@ -263,6 +283,7 @@
 
         <div class="flex items-center justify-center w-full px-6 py-4 border-t">
             <span class="text-sm text-secondary">
+                {{ 'home.footer.madeInPortugal' | translate }} ·
                 &copy; {{ currentYear }} {{ 'common.appName' | translate }}. {{ 'home.footerRights' | translate }}
             </span>
         </div>

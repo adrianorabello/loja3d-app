@@ -11,8 +11,9 @@
             <!-- Logo -->
             <div class="flex items-center justify-center">
                 <img
-                    class="w-8"
-                    src="assets/images/logo/logo.svg">
+                    class="h-7 w-auto"
+                    src="assets/images/logo/printoy-white.svg"
+                    alt="Printoy 3D">
             </div>
             <!-- Components -->
             <div class="flex items-center ml-auto">
@@ -45,10 +46,14 @@
     </ng-container>
     <!-- Navigation footer hook -->
     <ng-container fuseVerticalNavigationContentFooter>
-        <div class="flex flex-0 items-center justify-center h-16 pr-6 pl-2 mt-2 mb-4 opacity-12">
-            <img
-                class="max-w-36"
-                src="assets/images/logo/logo-text-on-dark.svg">
+        <div class="m-4 p-4 rounded-2xl bg-gray-800 bg-opacity-70 border border-gray-700 text-xs text-gray-300">
+            <div class="flex items-center mb-1 text-amber-400 font-semibold">
+                <mat-icon class="icon-size-4 mr-1.5 text-amber-400" [svgIcon]="'heroicons_solid:sparkles'"></mat-icon>
+                <span>Uma dica</span>
+            </div>
+            <p class="text-secondary text-xs leading-relaxed">
+                Confira as informações antes de publicar um produto na loja.
+            </p>
         </div>
     </ng-container>
 </fuse-vertical-navigation>

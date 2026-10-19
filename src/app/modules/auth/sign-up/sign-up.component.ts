@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { FormBuilder, FormGroup, NgForm, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { FuseValidators } from '@fuse/validators';
 import { FuseAnimations } from '@fuse/animations';
 import { FuseAlertType } from '@fuse/components/alert';
 import { AuthService } from 'app/core/auth/auth.service';
@@ -49,8 +50,13 @@ export class AuthSignUpComponent implements OnInit
         this.signUpForm = this._formBuilder.group({
                 name      : ['', Validators.required],
                 email     : ['', [Validators.required, Validators.email]],
-                password  : ['', [Validators.required, Validators.minLength(4)]],
+                password  : ['', [Validators.required, Validators.minLength(8)]],
+                passwordConfirm: ['', Validators.required],
+                phone     : [null],
                 agreements: ['', Validators.requiredTrue]
+            },
+            {
+                validators: FuseValidators.mustMatch('password', 'passwordConfirm')
             }
         );
     }
@@ -77,9 +83,12 @@ export class AuthSignUpComponent implements OnInit
         this.showAlert = false;
 
         // Sign up
-        const {name, email, password} = this.signUpForm.value;
+        const {name, email, password, passwordConfirm, phone} = this.signUpForm.value;
 
-        this._authService.signUp({name, email, password})
+        this._authService.signUp({
+            name, email, password, confirmPassword: passwordConfirm,
+            ...(phone?.phone ? {phone: phone.phone, phoneCountry: phone.phoneCountry} : {})
+        })
             .subscribe(
                 () => {
 

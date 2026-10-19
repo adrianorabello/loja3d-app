@@ -26,16 +26,30 @@ export const appRoutes: Route[] = [
         children   : []
     },
 
+    // Customer account pages use the storefront shell, but are separate from the public
+    // block so account data always passes through an authentication guard. This concrete
+    // route must precede the public block's empty-path lazy home route.
+    {
+        path            : 'account',
+        canActivateChild: [AuthGuard],
+        component       : LayoutComponent,
+        data            : {
+            layout: 'storefront'
+        },
+        children        : [
+            {path: 'profile', loadChildren: () => import('app/domains/customer/profile/profile.module').then(m => m.CustomerProfileModule)}
+        ]
+    },
+
     // Public storefront.
     //
     // NO guard and NO resolver, deliberately. An anonymous visitor must be able to
     // browse and build a cart without ever being redirected to sign in, and the
     // storefront layout takes everything it needs from DI.
     //
-    // This block is FIRST on purpose. Every block below it uses `path: ''` too, and an
-    // empty-path parent that carries children will match an exhausted URL — so with the
-    // auth blocks ahead of it, a request for '/' was being claimed by the guest block
-    // and rendered in the (childless, therefore blank) empty layout.
+    // This is the first empty-path layout block on purpose. Empty-path parents with
+    // children can claim an exhausted URL, so it must precede the guest/auth blocks to
+    // keep '/' in the storefront rather than a childless empty layout.
     {
         path     : '',
         component: LayoutComponent,
@@ -43,6 +57,23 @@ export const appRoutes: Route[] = [
             layout: 'storefront'
         },
         children : [
+            // Catalogue and product detail.
+            //
+            // `products/:slug` is listed BEFORE the bare `products` deliberately. Both are
+            // prefix matches, and a bare `products` carrying loadChildren would consume the
+            // first segment of /products/dragao-articulado and then hand the remaining
+            // 'dragao-articulado' to a child config that cannot match it. Ordering by
+            // descending segment count makes resolution deterministic rather than relying
+            // on the router backtracking across a lazy boundary.
+            //
+            // Both sit in THIS block, the unguarded one, on purpose: browsing the catalogue
+            // and filling a cart must never trigger a sign-in redirect.
+            {path: 'products/:slug', loadChildren: () => import('app/domains/storefront/product-details/product-details.module').then(m => m.StorefrontProductDetailsModule)},
+            {path: 'products', loadChildren: () => import('app/domains/storefront/kids-store/kids-store.module').then(m => m.KidsStoreModule)},
+
+            // Kids-friendly storefront — accessible via /kids-store or /products (default).
+            {path: 'kids-store', redirectTo: 'products'},
+
             // Home sits at exactly '/' as an empty-path lazy route with NO pathMatch.
             //
             // `pathMatch: 'full'` must NOT be used here: a full match has to consume the
@@ -51,8 +82,20 @@ export const appRoutes: Route[] = [
             //
             // Because an empty path matches as a prefix of anything, this entry MUST stay
             // LAST among its siblings — every concrete sibling route added in later
-            // phases (products, cart, checkout, 404) goes above it.
-            {path: '', loadChildren: () => import('app/modules/landing/home/home.module').then(m => m.LandingHomeModule)}
+            // phases (cart, checkout, 404) goes above it.
+            {path: '', loadChildren: () => import('app/domains/storefront/home/home.module').then(m => m.StorefrontHomeModule)}
+        ]
+    },
+
+    // E-mail confirmation links work for both guests and signed-in users
+    {
+        path: '',
+        component: LayoutComponent,
+        data: {
+            layout: 'empty'
+        },
+        children: [
+            {path: 'confirmation-required', loadChildren: () => import('app/modules/auth/confirmation-required/confirmation-required.module').then(m => m.AuthConfirmationRequiredModule)}
         ]
     },
 
@@ -66,7 +109,6 @@ export const appRoutes: Route[] = [
             layout: 'empty'
         },
         children: [
-            {path: 'confirmation-required', loadChildren: () => import('app/modules/auth/confirmation-required/confirmation-required.module').then(m => m.AuthConfirmationRequiredModule)},
             {path: 'forgot-password', loadChildren: () => import('app/modules/auth/forgot-password/forgot-password.module').then(m => m.AuthForgotPasswordModule)},
             {path: 'reset-password', loadChildren: () => import('app/modules/auth/reset-password/reset-password.module').then(m => m.AuthResetPasswordModule)},
             {path: 'sign-in', loadChildren: () => import('app/modules/auth/sign-in/sign-in.module').then(m => m.AuthSignInModule)},
@@ -88,10 +130,6 @@ export const appRoutes: Route[] = [
             {path: 'unlock-session', loadChildren: () => import('app/modules/auth/unlock-session/unlock-session.module').then(m => m.AuthUnlockSessionModule)}
         ]
     },
-
-    // NOTE: a second storefront block guarded by AuthGuard — for `account/orders` — is
-    // added in Phase 6. It must be a SEPARATE block from the public one above so the
-    // guard applies without making anonymous browsing trigger a sign-in redirect.
 
     // Admin area.
     //
@@ -121,10 +159,9 @@ export const appRoutes: Route[] = [
             initialData: InitialDataResolver
         },
         children   : [
-            // Temporary canary, proving the classy shell + resolver + role-filtered
-            // navigation all still work before the real admin screens exist.
-            // Replaced by dashboard/products/orders in Phase 7.
-            {path: 'example', loadChildren: () => import('app/modules/admin/example/example.module').then(m => m.ExampleModule)}
+            // The parent RoleGuard protects the list, create, edit, and any future
+            // product-management child routes.
+            {path: 'products', loadChildren: () => import('app/domains/admin/products/products.module').then(m => m.AdminProductsModule)}
         ]
     },
 

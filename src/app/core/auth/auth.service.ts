@@ -49,7 +49,23 @@ export class AuthService
      */
     forgotPassword(email: string): Observable<any>
     {
-        return this._httpClient.post('api/auth/forgot-password', email);
+        return this._httpClient.post('api/auth/forgot-password', {email});
+    }
+
+    /**
+     * Confirm an e-mail address with the token received by e-mail
+     */
+    verifyEmail(token: string): Observable<any>
+    {
+        return this._httpClient.post('api/auth/verify-email', {token});
+    }
+
+    /**
+     * Ask for a new verification e-mail
+     */
+    resendVerification(email: string): Observable<any>
+    {
+        return this._httpClient.post('api/auth/resend-verification', {email});
     }
 
     /**
@@ -57,9 +73,9 @@ export class AuthService
      *
      * @param password
      */
-    resetPassword(password: string): Observable<any>
+    resetPassword(token: string, password: string): Observable<any>
     {
-        return this._httpClient.post('api/auth/reset-password', password);
+        return this._httpClient.post('api/auth/reset-password', {token, password});
     }
 
     /**

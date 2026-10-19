@@ -1,6 +1,7 @@
 {
+    "phone": {"country": "Country", "search": "Search country or code", "number": "Phone", "invalid": "Invalid phone number."},
     "common": {
-        "appName": "Clara Rosa",
+        "appName": "Printoy 3D",
         "appTagline": "Custom 3D printing",
         "loading": "Loading...",
         "save": "Save",
@@ -27,6 +28,7 @@
         "signUp": "Sign up",
         "signOut": "Sign out",
         "account": "Account",
+        "profile": "My profile",
         "adminArea": "Admin",
         "backToStore": "Back to store"
     },
@@ -49,7 +51,41 @@
         "ctaTitle": "Have an idea in mind?",
         "ctaBody": "Browse our catalogue or talk to us about a custom piece.",
         "footerRights": "All rights reserved.",
-        "footerTagline": "3D-printed pieces, made in Portugal."
+        "footerTagline": "3D-printed pieces, made as a family.",
+        "landing": {
+            "eyebrow": "Made as a family, idea by idea",
+            "title": "Small ideas,",
+            "titleAccent": "big 3D creations!",
+            "subtitle": "Choose one of our pieces or share your idea and we will create a custom 3D print.",
+            "explore": "Explore products",
+            "custom": "I want a custom print",
+            "madeInPortugal": "Made with care in Portugal",
+            "visualLabel": "A selection of 3D-printed pieces"
+        },
+        "catalog": {
+            "eyebrow": "Pieces for everyday life",
+            "title": "Our little creations",
+            "subtitle": "Every piece is printed with attention to detail and comes in a range of colours.",
+            "dimensions": "Dimensions",
+            "empty": "We are preparing new creations. Please check back soon."
+        },
+        "custom": {
+            "eyebrow": "Have a different idea?",
+            "title": "Let’s see if we can bring it to life",
+            "body": "Tell us what you have in mind. Soon you will be able to request a quote for a custom piece.",
+            "action": "Request a quote"
+        },
+        "footer": {
+            "tagline": "3D-printed pieces, made as a family.",
+            "madeInPortugal": "Made with care in Portugal"
+        },
+        "feedback": {
+            "added": "Product added to cart.",
+            "unavailable": "This product could not be added to the cart.",
+            "quoteUnavailable": "Custom quote requests will be available soon.",
+            "loadFailedTitle": "The shop could not be loaded",
+            "loadFailed": "The catalogue is unavailable right now. Please try again."
+        }
     },
     "catalog": {
         "title": "Products",
@@ -173,6 +209,33 @@
         "hasAccount": "Already have an account?",
         "signInFailed": "Incorrect email or password."
     },
+    "customerAccount": {
+        "title": "My account",
+        "subtitle": "Manage your contact details and delivery addresses.",
+        "profileTitle": "Contact details",
+        "fullName": "Full name",
+        "email": "Email address",
+        "phone": "Phone",
+        "emailChangeHint": "Changing your email requires confirmation.",
+        "dateOfBirth": "Date of birth",
+        "addressesTitle": "Addresses",
+        "addressesHint": "Address changes are saved together with your profile.",
+        "addAddress": "Add address",
+        "editAddress": "Edit address",
+        "addressLabel": "Address name",
+        "street": "Street and number",
+        "unit": "Apartment, floor, etc. (optional)",
+        "postalCode": "Postal code",
+        "city": "City",
+        "country": "Country",
+        "noAddresses": "You have not saved any addresses yet.",
+        "saveAll": "Save profile and addresses",
+        "saved": "Your profile and addresses have been saved.",
+        "emailTaken": "That email address is already in use.",
+        "saveError": "Could not save your profile. Please try again.",
+        "removeAddressTitle": "Remove address",
+        "removeAddressConfirm": "Remove the address \"{{label}}\"?"
+    },
     "validation": {
         "required": "This field is required.",
         "email": "Please enter a valid email address.",
@@ -203,22 +266,41 @@
         },
         "products": {
             "title": "Products",
-            "newProduct": "New product",
+            "eyebrow": "Store management",
+            "subtitle": "Manage products and decide what appears in the catalog.",
+            "newProduct": "Add product",
             "editProduct": "Edit product",
+            "product": "Product",
             "image": "Image",
             "name": "Name",
             "category": "Category",
+            "dimensions": "Dimensions",
             "price": "Price",
             "stock": "Stock",
             "status": "Status",
+            "filterStatus": "Availability",
+            "allStatuses": "All",
+            "visible": "Visible",
+            "hidden": "Hidden",
+            "visibleInStore": "Visible in store",
+            "hiddenInStore": "Hidden in store",
             "actions": "Actions",
             "active": "Active",
             "inactive": "Inactive",
+            "activate": "Enable product",
+            "deactivate": "Disable product",
             "noProducts": "No products.",
             "deleteTitle": "Delete product",
             "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This cannot be undone.",
             "saved": "Product saved.",
-            "deleted": "Product deleted."
+            "deleted": "Product deleted.",
+            "activated": "Product enabled in the storefront.",
+            "deactivated": "Product hidden from the storefront.",
+            "statusUpdateError": "Could not update product availability.",
+            "searchPlaceholder": "Search by name",
+            "slugTaken": "A product with this identifier already exists.",
+            "saveError": "Could not save the product.",
+            "deleteError": "Could not delete the product."
         },
         "orders": {
             "title": "Orders",
@@ -237,6 +319,11 @@
         "nameEn": "Name (English)",
         "descriptionPt": "Description (Portuguese)",
         "descriptionEn": "Description (English)",
+        "dimensions": "Dimensions",
+        "widthMm": "Width (mm)",
+        "heightMm": "Height (mm)",
+        "depthMm": "Depth (mm)",
+        "completeDimensions": "Enter width, height, and depth together, or leave all three empty.",
         "price": "Price",
         "category": "Category",
         "stock": "Stock",
@@ -253,8 +340,22 @@
         "imageHint": "JPG or PNG, up to 2 MB each.",
         "imageTooLarge": "Image \"{{name}}\" exceeds 2 MB.",
         "imageWrongType": "File \"{{name}}\" is not a JPG or PNG image.",
+        "imageReadError": "Could not read image \"{{name}}\".",
         "noImages": "No images. Add at least one.",
         "slug": "Identifier (slug)",
         "slugHint": "Used in the product address. Generated from the name."
+    },
+    "kidsStore": {
+        "heroTitle": "WEIRDLY CUTE. SERIOUSLY FUN.",
+        "heroSubtitle": "Discover colorful, creative, and unique products made with 3D printing.",
+        "exploreProducts": "Explore Products",
+        "aboutStore": "About Our Store",
+        "productsTitle": "OUR LITTLE CREATIONS",
+        "productsSubtitle": "Pick your favourite and bring it home!",
+        "buyNow": "Buy Now",
+        "addToCart": "Add to Cart",
+        "addedToCart": "Added to your cart!",
+        "ctaTitle": "Got a wild idea?",
+        "ctaBody": "Browse our full catalogue or talk to us about a custom piece — we love a creative challenge!"
     }
 }

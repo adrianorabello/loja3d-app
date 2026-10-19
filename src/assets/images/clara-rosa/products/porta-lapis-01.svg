@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Clara Rosa product placeholder artwork: pencil holder (view 1)
+    Hand-authored in-repo so there is no third-party licence to honour and no network
+    dependency in tests. viewBox is exactly square (400x400) so `object-cover` never crops
+    and the catalogue's 1:1 aspect box never shifts.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400" role="img">
+  <defs>
+    <linearGradient id="plate" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff1f4"/>
+      <stop offset="1" stop-color="#ffe0e7"/>
+    </linearGradient>
+    <!-- Horizontal hairlines, echoing 3D-print layer lines. -->
+    <pattern id="layers" width="400" height="6" patternUnits="userSpaceOnUse">
+      <rect width="400" height="6" fill="none"/>
+      <line x1="0" y1="5.5" x2="400" y2="5.5" stroke="#0f172a" stroke-opacity="0.05" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="400" height="400" fill="url(#plate)"/>
+  <rect width="400" height="400" fill="url(#layers)"/>
+  <g fill="none" stroke="#0f172a" stroke-width="7" stroke-linejoin="round">
+    <path d="M136 178h128l-12 112a14 14 0 01-14 12h-76a14 14 0 01-14-12z" fill="#14b8a6" fill-opacity="0.22"/>
+    <ellipse cx="200" cy="178" rx="64" ry="18"/>
+    <line x1="170" y1="110" x2="170" y2="178" stroke="#0d9488" stroke-width="9" stroke-linecap="round"/>
+    <line x1="200" y1="96" x2="200" y2="178" stroke="#0d9488" stroke-width="9" stroke-linecap="round"/>
+    
+  </g>
+</svg>

@@ -21,6 +21,8 @@ import { UserMockApi } from 'app/mock-api/common/user/api';
 // Clara Rosa — development-only handlers. Everything under `mock-api/clara-rosa/` is
 // deletable as one unit once a real backend exists.
 import { MockSessionService } from 'app/mock-api/clara-rosa/auth/mock-session.service';
+import { CategoriesMockApi } from 'app/mock-api/clara-rosa/categories/api';
+import { ProductsMockApi } from 'app/mock-api/clara-rosa/products/api';
 
 export const mockApiServices = [
     AcademyMockApi,
@@ -44,5 +46,7 @@ export const mockApiServices = [
     UserMockApi,
 
     // Clara Rosa
-    MockSessionService
+    MockSessionService,
+    CategoriesMockApi,
+    ProductsMockApi
 ];

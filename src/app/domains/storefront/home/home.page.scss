@@ -1,0 +1,42 @@
+:host {
+    display: block;
+    width: 100%;
+}
+
+.storefront-home {
+    --home-cream: #fffdf4;
+    --home-cream-deep: #f5f0df;
+    --home-green: #397d16;
+    --home-green-dark: #2e6612;
+    --home-orange: #f47b20;
+    --home-text: #29321e;
+    --home-muted: #5a6350;
+    --home-font: 'Nunito', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+    width: 100%;
+    overflow: hidden;
+    background: var(--home-cream);
+    color: var(--home-text);
+    font-family: var(--home-font);
+}
+
+.home-state {
+    display: grid;
+    min-height: 24rem;
+    place-content: center;
+    gap: 1rem;
+    padding: 2rem;
+    text-align: center;
+
+    h1 {
+        margin: 0;
+        color: var(--home-orange);
+        font-size: 1.75rem;
+        font-weight: 800;
+    }
+
+    p {
+        margin: 0;
+        color: var(--home-muted);
+    }
+}

@@ -69,19 +69,19 @@ describe('appRoutes (integration)', () => {
         authService.signIn({email, password}).subscribe(() => done());
     };
 
-    it('should let a signed-in ADMIN into /admin/example', (done) => {
+    it('should let a signed-in ADMIN into /admin/products', (done) => {
         signInAs('admin@clararosa.pt', 'admin', () => {
-            router.navigateByUrl('/admin/example').then((ok) => {
+            router.navigateByUrl('/admin/products').then((ok) => {
                 expect(ok).toBe(true);
-                expect(router.url).toBe('/admin/example');
+                expect(router.url).toBe('/admin/products');
                 done();
             });
         });
     });
 
-    it('should turn a CUSTOMER away from /admin/example and send them home', (done) => {
+    it('should turn a CUSTOMER away from /admin/products and send them home', (done) => {
         signInAs('cliente@clararosa.pt', 'cliente', () => {
-            router.navigateByUrl('/admin/example').then(() => {
+            router.navigateByUrl('/admin/products').then(() => {
                 // RoleGuard redirects to '/' rather than sign-in: they are already
                 // authenticated, so a sign-in redirect would loop.
                 expect(router.url).toBe('/');
@@ -90,11 +90,29 @@ describe('appRoutes (integration)', () => {
         });
     });
 
-    it('should send an anonymous visitor from /admin/example to sign-in with a return URL', (done) => {
-        router.navigateByUrl('/admin/example').then(() => {
+    it('should send an anonymous visitor from /admin/products to sign-in with a return URL', (done) => {
+        router.navigateByUrl('/admin/products').then(() => {
             expect(router.url).toContain('/sign-in');
-            expect(decodeURIComponent(router.url)).toContain('redirectURL=/admin/example');
+            expect(decodeURIComponent(router.url)).toContain('redirectURL=/admin/products');
             done();
+        });
+    });
+
+    it('should protect customer profile data and preserve the requested return URL', (done) => {
+        router.navigateByUrl('/account/profile').then(() => {
+            expect(router.url).toContain('/sign-in');
+            expect(decodeURIComponent(router.url)).toContain('redirectURL=/account/profile');
+            done();
+        });
+    });
+
+    it('should let a signed-in customer reach their own profile', (done) => {
+        signInAs('cliente@clararosa.pt', 'cliente', () => {
+            router.navigateByUrl('/account/profile').then((ok) => {
+                expect(ok).toBe(true);
+                expect(router.url).toBe('/account/profile');
+                done();
+            });
         });
     });
 

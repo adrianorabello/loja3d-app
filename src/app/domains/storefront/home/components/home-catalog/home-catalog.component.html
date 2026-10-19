@@ -1,0 +1,26 @@
+<section class="home-catalog" id="home-catalog" aria-labelledby="home-catalog-title">
+    <div class="home-catalog__inner">
+        <div class="home-catalog__heading">
+            <div>
+                <p class="home-eyebrow">{{ 'home.catalog.eyebrow' | translate }}</p>
+                <h2 id="home-catalog-title">{{ 'home.catalog.title' | translate }}</h2>
+            </div>
+            <p>{{ 'home.catalog.subtitle' | translate }}</p>
+        </div>
+
+        <div class="home-catalog__grid" *ngIf="products.length; else emptyCatalog">
+            <product-card
+                *ngFor="let product of products; trackBy: trackById"
+                [product]="product"
+                [presentation]="'home'"
+                (addToCart)="addToCart.emit($event)">
+            </product-card>
+        </div>
+
+        <ng-template #emptyCatalog>
+            <div class="home-catalog__empty">
+                <p>{{ 'home.catalog.empty' | translate }}</p>
+            </div>
+        </ng-template>
+    </div>
+</section>

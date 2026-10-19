@@ -13,6 +13,12 @@ layout {
         width: 100%;
     }
 
+    /* Drawer overlay should not participate in flex row */
+    > fuse-drawer {
+        flex: 0 0 auto;
+        width: auto;
+    }
+
     /* Base styles for components that load as a route */
     router-outlet {
 
@@ -23,4 +29,13 @@ layout {
             width: 100%;
         }
     }
+}
+
+storefront-layout {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
 }
