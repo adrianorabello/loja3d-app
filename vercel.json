@@ -3,38 +3,39 @@
   "installCommand": "npm ci --legacy-peer-deps",
   "buildCommand": "npm run build:vercel",
   "outputDirectory": "dist/loja3d-app",
-  "rewrites": [
-    { "source": "/((?!assets/|.*\\..*).*)", "destination": "/index.html" }
-  ],
-  "headers": [
+  "routes": [
     {
-      "source": "/(.*)\\.(js|css|woff2?|ttf|svg|png|jpg|jpeg|webp|ico)",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+      "src": "/(.*)",
+      "headers": {
+        "Cache-Control": "no-cache",
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+        "X-Frame-Options": "DENY",
+        "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+        "Content-Security-Policy-Report-Only": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https:; frame-ancestors 'none'; base-uri 'self'"
+      },
+      "continue": true
     },
     {
-      "source": "/assets/i18n/(.*)",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=300" }]
+      "src": "/[^/]+\\.[a-f0-9]{8,}\\.(js|css)",
+      "headers": { "Cache-Control": "public, max-age=31536000, immutable" },
+      "continue": true
     },
     {
-      "source": "/((?!assets/|.*\\..*).*)",
-      "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+      "src": "/assets/i18n/(.*)",
+      "headers": { "Cache-Control": "public, max-age=300" },
+      "continue": true
+    },
+    { "handle": "filesystem" },
+    {
+      "src": "/((?!assets(?:/|$)|.*\\..*).*)",
+      "dest": "/index.html",
+      "headers": { "Cache-Control": "no-cache" }
     },
     {
-      "source": "/index.html",
-      "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
-    },
-    {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "X-Frame-Options", "value": "DENY" },
-        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" },
-        {
-          "key": "Content-Security-Policy-Report-Only",
-          "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https:; frame-ancestors 'none'; base-uri 'self'"
-        }
-      ]
+      "src": "/(.*)",
+      "status": 404,
+      "headers": { "Cache-Control": "no-store" }
     }
   ]
 }
