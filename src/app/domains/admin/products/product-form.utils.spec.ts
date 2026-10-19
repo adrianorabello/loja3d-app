@@ -102,6 +102,8 @@ describe('product-form.utils', () => {
                 nameEn       : 'Pencil holder',
                 descriptionPt: 'Descrição',
                 descriptionEn: 'Description',
+                nameDe       : '',
+                descriptionDe: '',
                 slug         : 'porta-lapis',
                 categoryId   : 'cat-casa-escritorio',
                 price        : 9.5,

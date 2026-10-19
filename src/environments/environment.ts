@@ -21,13 +21,13 @@ export const environment = {
      * Set to false to talk to the real FastAPI backend on port 8000 (proxied via proxy.conf.json).
      * Set to true to fallback to in-memory mock handlers.
      */
-    useMockApi: false,
+    useMockApi: true,
 
     /**
      * Base URL every Clara Rosa service builds its endpoints from, injected as
      * `API_BASE_URL`. Matches the path the mock handlers register against.
      */
-    apiBaseUrl: 'api/clara-rosa'
+    apiBaseUrl: 'api/clara-rosa',
 };
 
 /*

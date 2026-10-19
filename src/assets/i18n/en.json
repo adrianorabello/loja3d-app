@@ -317,8 +317,10 @@
     "productForm": {
         "namePt": "Name (Portuguese)",
         "nameEn": "Name (English)",
+        "nameDe": "Name (German)",
         "descriptionPt": "Description (Portuguese)",
         "descriptionEn": "Description (English)",
+        "descriptionDe": "Description (German)",
         "dimensions": "Dimensions",
         "widthMm": "Width (mm)",
         "heightMm": "Height (mm)",

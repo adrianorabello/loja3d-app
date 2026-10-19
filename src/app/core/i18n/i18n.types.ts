@@ -1,21 +1,20 @@
 /**
- * Languages the application ships with. `pt-PT` is the default.
+ * Languages the application ships with. `pt-BR` is the default.
  *
- * This union is deliberately narrow: it is also the key set of `LocalizedText`
- * (see `app/shared/models/localized-text.model.ts`), so adding a language here
- * is a typed, compiler-checked change across every localized product record.
+ * Product data (`LocalizedText`) is keyed independently of this union — see
+ * `app/shared/models/localized-text.model.ts`.
  */
-export type AppLanguage = 'pt-PT' | 'en';
+export type AppLanguage = 'pt-BR' | 'en' | 'de';
 
 /**
  * Default language, used when no stored preference exists.
  */
-export const DEFAULT_LANGUAGE: AppLanguage = 'pt-PT';
+export const DEFAULT_LANGUAGE: AppLanguage = 'pt-BR';
 
 /**
  * Every supported language, in display order.
  */
-export const AVAILABLE_LANGUAGES: AppLanguage[] = ['pt-PT', 'en'];
+export const AVAILABLE_LANGUAGES: AppLanguage[] = ['pt-BR', 'en', 'de'];
 
 /**
  * localStorage key holding the viewer's language preference.
@@ -29,6 +28,15 @@ export interface LanguageOption
 {
     id: AppLanguage;
     label: string;
+
+    /** Short code shown next to the flag. */
+    code: string;
+
+    /** Path to the flag image. */
+    flag: string;
+
+    /** Value for `<html lang>`. */
+    htmlLang: string;
 }
 
 /**
@@ -36,6 +44,12 @@ export interface LanguageOption
  * a language picker that renders "English" in Portuguese helps nobody.
  */
 export const LANGUAGE_OPTIONS: LanguageOption[] = [
-    { id: 'pt-PT', label: 'Português' },
-    { id: 'en', label: 'English' }
+    { id: 'pt-BR', label: 'Português (Brasil)', code: 'PT', flag: 'assets/images/flags/br.svg', htmlLang: 'pt-BR' },
+    { id: 'en', label: 'English (UK)', code: 'EN', flag: 'assets/images/flags/gb.svg', htmlLang: 'en-GB' },
+    { id: 'de', label: 'Deutsch', code: 'DE', flag: 'assets/images/flags/de.svg', htmlLang: 'de' }
 ];
+
+/**
+ * Language ids stored by earlier versions, mapped to their current id.
+ */
+export const LEGACY_LANGUAGE_IDS: Record<string, AppLanguage> = {'pt-PT': 'pt-BR'};

@@ -56,18 +56,27 @@
 
                 <!-- Language switcher -->
                 <button
-                    mat-icon-button
+                    mat-button
+                    class="px-2 min-w-0"
                     [matMenuTriggerFor]="languageMenu"
                     [attr.aria-label]="'common.language' | translate">
-                    <mat-icon
-                        class="icon-size-5"
-                        [svgIcon]="'heroicons_outline:translate'"></mat-icon>
+                    <span class="flex items-center space-x-2" *ngIf="activeLanguage$ | async as active">
+                        <img
+                            class="w-6 h-4 rounded-sm object-cover"
+                            [src]="active.flag"
+                            alt="">
+                        <span class="font-semibold text-sm">{{ active.code }}</span>
+                    </span>
                 </button>
                 <mat-menu #languageMenu="matMenu">
                     <button
                         *ngFor="let language of languages"
                         mat-menu-item
                         (click)="setLanguage(language.id)">
+                        <img
+                            class="w-6 h-4 mr-3 rounded-sm object-cover inline-block"
+                            [src]="language.flag"
+                            alt="">
                         <span
                             class="font-medium"
                             [class.text-primary]="(language$ | async) === language.id">

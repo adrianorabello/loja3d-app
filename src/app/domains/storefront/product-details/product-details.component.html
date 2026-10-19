@@ -72,7 +72,7 @@
                     </h1>
 
                     <div class="mt-2 text-3xl font-bold text-default">
-                        {{ product.price | currency }}
+                        {{ product.price | appCurrency }}
                     </div>
 
                     <div class="mt-1 text-sm text-secondary" *ngIf="isMadeToOrder">

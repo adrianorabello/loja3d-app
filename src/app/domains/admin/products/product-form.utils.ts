@@ -1,3 +1,4 @@
+import { LocalizedText } from 'app/shared/models/localized-text.model';
 import { Product } from 'app/shared/models/product.model';
 
 /**
@@ -27,6 +28,8 @@ export interface ProductFormValue
     nameEn: string;
     descriptionPt: string;
     descriptionEn: string;
+    nameDe?: string;
+    descriptionDe?: string;
     slug: string;
     categoryId: string;
     price: number;
@@ -44,6 +47,16 @@ export interface ProductFormValue
  *
  * @param text
  */
+/**
+ * German is optional: only add the key when the admin filled it in.
+ */
+function withGerman(text: LocalizedText, german: string | undefined): LocalizedText
+{
+    const de = (german ?? '').trim();
+
+    return de ? {...text, de} : text;
+}
+
 export function slugify(text: string): string
 {
     return (text ?? '')
@@ -94,8 +107,8 @@ export function formValueToProduct(value: ProductFormValue, images: string[]): O
 
     return {
         slug       : value.slug.trim() || slugify(value.namePt),
-        name       : {'pt-PT': value.namePt.trim(), en: (value.nameEn ?? '').trim()},
-        description: {'pt-PT': value.descriptionPt.trim(), en: (value.descriptionEn ?? '').trim()},
+        name       : withGerman({'pt-PT': value.namePt.trim(), en: (value.nameEn ?? '').trim()}, value.nameDe),
+        description: withGerman({'pt-PT': value.descriptionPt.trim(), en: (value.descriptionEn ?? '').trim()}, value.descriptionDe),
         categoryId : value.categoryId,
         price      : Math.round(Number(value.price) * 100) / 100,
         currency   : 'EUR',
@@ -134,6 +147,8 @@ export function productToFormValue(product: Product): ProductFormValue
         nameEn       : product.name?.en ?? '',
         descriptionPt: product.description?.['pt-PT'] ?? '',
         descriptionEn: product.description?.en ?? '',
+        nameDe       : product.name?.de ?? '',
+        descriptionDe: product.description?.de ?? '',
         slug         : product.slug,
         categoryId   : product.categoryId,
         price        : product.price,

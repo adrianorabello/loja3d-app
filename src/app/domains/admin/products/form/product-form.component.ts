@@ -96,8 +96,10 @@ export class ProductFormComponent implements OnInit, OnDestroy
         this.form = this._formBuilder.group({
             namePt       : ['', Validators.required],
             nameEn       : [''],
+            nameDe       : [''],
             descriptionPt: [''],
             descriptionEn: [''],
+            descriptionDe: [''],
             slug         : ['', [Validators.required, Validators.pattern(this.slugPattern)]],
             categoryId   : ['', Validators.required],
             price        : [null, [Validators.required, Validators.min(0.01)]],

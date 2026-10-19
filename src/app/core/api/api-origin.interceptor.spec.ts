@@ -28,10 +28,10 @@ describe('ApiOriginInterceptor', () => {
 
     it('leaves assets, i18n and absolute URLs untouched', () => {
         const {http, ctrl} = setup('https://api.example.com');
-        http.get('./assets/i18n/pt-PT.json').subscribe();
+        http.get('./assets/i18n/pt-BR.json').subscribe();
         http.get('assets/images/logo.svg').subscribe();
         http.get('https://other.example.com/api/x').subscribe();
-        ctrl.expectOne('./assets/i18n/pt-PT.json');
+        ctrl.expectOne('./assets/i18n/pt-BR.json');
         ctrl.expectOne('assets/images/logo.svg');
         ctrl.expectOne('https://other.example.com/api/x');
     });

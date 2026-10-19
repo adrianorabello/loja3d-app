@@ -68,7 +68,7 @@
                         {{ line.name | localizedText }}
                     </div>
                     <div class="mt-0.5 text-sm text-secondary">
-                        {{ line.unitPrice | currency }}
+                        {{ line.unitPrice | appCurrency }}
                     </div>
 
                     <!-- Quantity -->
@@ -102,7 +102,7 @@
 
                 <!-- Line total -->
                 <div class="flex-0 ml-2 font-semibold text-default">
-                    {{ line.lineTotal | currency }}
+                    {{ line.lineTotal | appCurrency }}
                 </div>
             </div>
         </div>
@@ -111,7 +111,7 @@
         <div class="flex-0 p-5 border-t" *ngIf="vm.lines.length">
             <div class="flex items-center justify-between text-secondary">
                 <span>{{ 'cart.subtotal' | translate }}</span>
-                <span class="font-medium text-default">{{ vm.subtotal | currency }}</span>
+                <span class="font-medium text-default">{{ vm.subtotal | appCurrency }}</span>
             </div>
             <div class="flex items-center justify-between mt-1 text-secondary">
                 <span>{{ 'cart.shipping' | translate }}</span>
@@ -120,11 +120,11 @@
                     0 EUR, which reads like a bug to a shopper.
                 -->
                 <span class="font-medium text-default" *ngIf="!vm.shipping">{{ 'cart.shippingFree' | translate }}</span>
-                <span class="font-medium text-default" *ngIf="vm.shipping">{{ vm.shipping | currency }}</span>
+                <span class="font-medium text-default" *ngIf="vm.shipping">{{ vm.shipping | appCurrency }}</span>
             </div>
             <div class="flex items-center justify-between mt-3 pt-3 text-lg font-bold border-t text-default">
                 <span>{{ 'cart.total' | translate }}</span>
-                <span>{{ vm.total | currency }}</span>
+                <span>{{ vm.total | appCurrency }}</span>
             </div>
 
             <button

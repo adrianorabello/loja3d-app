@@ -48,11 +48,11 @@
         {{ product.name | localizedText }}
     </h3>
 
-    <!-- Price. EUR + pt-PT come from CoreModule's DEFAULT_CURRENCY_CODE and LOCALE_ID. -->
+    <!-- Price. EUR, formatted for the active language by appCurrency. -->
     <div
         class="mt-1 text-xl font-bold"
         [ngClass]="presentation === 'home' ? 'text-gray-900' : 'text-default'">
-        {{ product.price | currency }}
+        {{ product.price | appCurrency }}
     </div>
 
     <p

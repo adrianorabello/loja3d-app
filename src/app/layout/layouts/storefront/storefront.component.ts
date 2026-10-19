@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { map, takeUntil } from 'rxjs/operators';
 import { FuseNavigationItem } from '@fuse/components/navigation';
 import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
 import { AuthService } from 'app/core/auth/auth.service';
@@ -37,6 +37,7 @@ export class StorefrontLayoutComponent implements OnInit, OnDestroy
     user$: Observable<User>;
     cartCount$: Observable<number>;
     language$: Observable<AppLanguage>;
+    activeLanguage$: Observable<LanguageOption>;
 
     readonly currentYear: number = new Date().getFullYear();
 
@@ -58,6 +59,7 @@ export class StorefrontLayoutComponent implements OnInit, OnDestroy
         this.user$ = this._userService.user$;
         this.cartCount$ = this._cartService.count$;
         this.language$ = this._i18nService.language$;
+        this.activeLanguage$ = this.language$.pipe(map(id => this.languages.find(option => option.id === id)));
     }
 
     // -----------------------------------------------------------------------------------------------------

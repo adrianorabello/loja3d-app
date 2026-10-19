@@ -2,7 +2,7 @@ import { ChangeDetectorRef } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { I18nService } from 'app/core/i18n/i18n.service';
 import { AppLanguage } from 'app/core/i18n/i18n.types';
-import { LocalizedText } from 'app/shared/models/localized-text.model';
+import { LocalizedText, resolveLocalizedText } from 'app/shared/models/localized-text.model';
 import { LocalizedTextPipe } from 'app/shared/pipes/localized-text.pipe';
 
 /**
@@ -17,7 +17,7 @@ describe('LocalizedTextPipe', () => {
     /** Minimal I18nService stand-in whose language the test drives. */
     class I18nStub
     {
-        readonly subject: BehaviorSubject<AppLanguage> = new BehaviorSubject<AppLanguage>('pt-PT');
+        readonly subject: BehaviorSubject<AppLanguage> = new BehaviorSubject<AppLanguage>('pt-BR');
 
         get language(): AppLanguage
         {
@@ -85,9 +85,14 @@ describe('LocalizedTextPipe', () => {
 
     it('does not mark dirty when the language is re-emitted unchanged', () => {
         pipe.transform(bilingual);
-        i18n.use('pt-PT');
+        i18n.use('pt-BR');
 
         expect(markForCheck).not.toHaveBeenCalled();
+    });
+
+    it('serves German when present and falls back to Portuguese when absent', () => {
+        expect(resolveLocalizedText({'pt-PT': 'Drache', 'en': 'Dragon', 'de': 'Drache DE'}, 'de')).toBe('Drache DE');
+        expect(resolveLocalizedText({'pt-PT': 'Dragão', 'en': 'Dragon'}, 'de')).toBe('Dragão');
     });
 
     it('falls back to a populated language rather than rendering empty', () => {

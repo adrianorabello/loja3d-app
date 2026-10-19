@@ -35,7 +35,7 @@
         <div class="flex flex-col p-6 bg-card shadow rounded-2xl">
 
             <!-- Names -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-x-6">
                 <mat-form-field>
                     <mat-label>{{ 'productForm.namePt' | translate }}</mat-label>
                     <input
@@ -52,6 +52,13 @@
                         id="nameEn"
                         matInput
                         [formControlName]="'nameEn'">
+                </mat-form-field>
+                <mat-form-field>
+                    <mat-label>{{ 'productForm.nameDe' | translate }}</mat-label>
+                    <input
+                        id="nameDe"
+                        matInput
+                        [formControlName]="'nameDe'">
                 </mat-form-field>
             </div>
 
@@ -72,7 +79,7 @@
             </mat-form-field>
 
             <!-- Descriptions -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 mt-2">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-x-6 mt-2">
                 <mat-form-field>
                     <mat-label>{{ 'productForm.descriptionPt' | translate }}</mat-label>
                     <textarea
@@ -88,6 +95,14 @@
                         matInput
                         rows="4"
                         [formControlName]="'descriptionEn'"></textarea>
+                </mat-form-field>
+                <mat-form-field>
+                    <mat-label>{{ 'productForm.descriptionDe' | translate }}</mat-label>
+                    <textarea
+                        id="descriptionDe"
+                        matInput
+                        rows="4"
+                        [formControlName]="'descriptionDe'"></textarea>
                 </mat-form-field>
             </div>
 

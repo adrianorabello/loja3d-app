@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
+import { AppCurrencyPipe } from 'app/shared/pipes/app-currency.pipe';
 import { LocalizedTextPipe } from 'app/shared/pipes/localized-text.pipe';
 
 /**
@@ -24,6 +25,7 @@ import { LocalizedTextPipe } from 'app/shared/pipes/localized-text.pipe';
  */
 @NgModule({
     declarations: [
+        AppCurrencyPipe,
         LocalizedTextPipe
     ],
     imports     : [
@@ -37,6 +39,7 @@ import { LocalizedTextPipe } from 'app/shared/pipes/localized-text.pipe';
         FormsModule,
         ReactiveFormsModule,
         TranslateModule,
+        AppCurrencyPipe,
         LocalizedTextPipe
     ]
 })

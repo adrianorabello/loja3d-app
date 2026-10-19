@@ -20,13 +20,13 @@ if (!['local', 'dev', 'prod'].includes(appEnv)) {
     fail(`APP_ENV must be local, dev or prod (got "${appEnv}").`);
 }
 
-let apiUrl = (process.env.API_URL || '').trim().replace(/\/+$/, '');
+let apiUrl = (process.env.API_URL || '').trim().replace(/^["']|["']$/g, '').replace(/\/+$/, '');
 if (appEnv !== 'local') {
     if (!apiUrl) {
         fail(`API_URL is required when APP_ENV=${appEnv}.`);
     }
     if (!/^https:\/\/[^\s/]+(:\d+)?$/.test(apiUrl)) {
-        fail('API_URL must be an https origin without a path, e.g. https://api.example.com');
+        fail(`API_URL must be an https origin without a path, e.g. https://api.example.com (received: ${JSON.stringify(apiUrl)})`);
     }
 }
 

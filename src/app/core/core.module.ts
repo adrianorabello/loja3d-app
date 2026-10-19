@@ -1,8 +1,5 @@
 import { DEFAULT_CURRENCY_CODE, LOCALE_ID, NgModule, Optional, SkipSelf } from '@angular/core';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { registerLocaleData } from '@angular/common';
-import localeEn from '@angular/common/locales/en';
-import localePt from '@angular/common/locales/pt-PT';
 import { DomSanitizer } from '@angular/platform-browser';
 import { MatIconRegistry } from '@angular/material/icon';
 import { AuthService } from 'app/core/auth/auth.service';
@@ -13,11 +10,9 @@ import { I18nModule } from 'app/core/i18n/i18n.module';
 import { DEFAULT_LANGUAGE } from 'app/core/i18n/i18n.types';
 import { environment } from 'environments/environment';
 
-// Locale data must be registered before Angular's date/number/currency pipes can
-// format for these locales. Registering both keeps the option open even though
-// LOCALE_ID itself is pinned (see below).
-registerLocaleData(localePt);
-registerLocaleData(localeEn);
+// Side-effect import: registers the locale data (pt-BR, en, de) that the pinned LOCALE_ID needs at bootstrap.
+import 'app/shared/pipes/app-currency.pipe';
+
 
 @NgModule({
     imports  : [
@@ -46,8 +41,7 @@ registerLocaleData(localeEn);
         },
         {
             // Pinned, not switched at runtime: Angular resolves LOCALE_ID once at
-            // bootstrap, so changing the UI language does NOT change number/date
-            // grouping. Doing that properly needs a reload or per-locale builds.
+            // bootstrap. Use `appCurrency` (not `currency`) for prices that must follow the language.
             provide : LOCALE_ID,
             useValue: DEFAULT_LANGUAGE
         },

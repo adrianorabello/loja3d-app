@@ -45,7 +45,7 @@ export class PhoneInputComponent implements OnInit, ControlValueAccessor, Valida
 
     ngOnInit(): void
     {
-        this.countries = buildPhoneCountries(this._translate.currentLang || 'pt-PT');
+        this.countries = buildPhoneCountries(this._translate.currentLang || 'pt-BR');
         this.filtered = this.countries;
     }
 

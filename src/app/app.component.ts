@@ -24,7 +24,7 @@ export class AppComponent implements OnInit
      */
     ngOnInit(): void
     {
-        // Resolve the startup language (stored preference, else pt-PT) and load its
+        // Resolve the startup language (stored preference, else pt-BR) and load its
         // dictionary. Done here rather than in an APP_INITIALIZER so the first paint is
         // not blocked on an HTTP fetch — templates render keys for a few milliseconds and
         // then resolve, which is preferable to a blank screen.

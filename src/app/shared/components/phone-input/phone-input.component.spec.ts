@@ -3,10 +3,10 @@ import { buildPhoneCountries } from './phone-countries';
 import { PhoneInputComponent } from './phone-input.component';
 
 describe('PhoneInputComponent', () => {
-    const component = new PhoneInputComponent({currentLang: 'pt-PT'} as any);
+    const component = new PhoneInputComponent({currentLang: 'pt-BR'} as any);
 
     it('lists countries with dial codes from libphonenumber metadata', () => {
-        const list = buildPhoneCountries('pt-PT');
+        const list = buildPhoneCountries('pt-BR');
         expect(list.find((c) => c.iso === 'PT').dialCode).toBe('351');
         expect(list.find((c) => c.iso === 'GB').dialCode).toBe('44');
         expect(list.find((c) => c.iso === 'US').dialCode).toBe('1');

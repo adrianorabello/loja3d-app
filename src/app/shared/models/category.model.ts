@@ -7,7 +7,7 @@ import { LocalizedText } from 'app/shared/models/localized-text.model';
  * record rather than a key in the translation dictionaries. The evidence is in the
  * dictionaries themselves: they define `catalog.category` and `catalog.allCategories` — the
  * labels *around* the filter — but no label for any individual category. An admin will be
- * able to add a category without a developer touching `en.json` / `pt-PT.json`.
+ * able to add a category without a developer touching `en.json` / `pt-BR.json`.
  */
 export interface Category
 {

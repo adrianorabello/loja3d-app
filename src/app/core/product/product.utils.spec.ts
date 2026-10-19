@@ -167,18 +167,18 @@ describe('product.utils', () => {
         const all = [ana, agueda, zebra];
 
         it('sorts by price ascending and descending', () => {
-            expect(sortProducts(all, 'price-asc', 'pt-PT').map(p => p.id)).toEqual(['b', 'c', 'a']);
-            expect(sortProducts(all, 'price-desc', 'pt-PT').map(p => p.id)).toEqual(['a', 'c', 'b']);
+            expect(sortProducts(all, 'price-asc', 'pt-BR').map(p => p.id)).toEqual(['b', 'c', 'a']);
+            expect(sortProducts(all, 'price-desc', 'pt-BR').map(p => p.id)).toEqual(['a', 'c', 'b']);
         });
 
         it('sorts newest first by createdAt', () => {
-            expect(sortProducts(all, 'newest', 'pt-PT').map(p => p.id)).toEqual(['a', 'c', 'b']);
+            expect(sortProducts(all, 'newest', 'pt-BR').map(p => p.id)).toEqual(['a', 'c', 'b']);
         });
 
         it('collates accented names beside their base letter, not after z', () => {
             // A naive `<` comparison puts "Água" after "Zebra" because of the code point.
-            expect(sortProducts(all, 'name-asc', 'pt-PT').map(p => p.id)).toEqual(['b', 'a', 'c']);
-            expect(sortProducts(all, 'name-desc', 'pt-PT').map(p => p.id)).toEqual(['c', 'a', 'b']);
+            expect(sortProducts(all, 'name-asc', 'pt-BR').map(p => p.id)).toEqual(['b', 'a', 'c']);
+            expect(sortProducts(all, 'name-desc', 'pt-BR').map(p => p.id)).toEqual(['c', 'a', 'b']);
         });
 
         it('sorts on the resolved name for the active language', () => {
@@ -188,7 +188,7 @@ describe('product.utils', () => {
 
         it('does not mutate the input array', () => {
             const input = [...all];
-            sortProducts(input, 'price-asc', 'pt-PT');
+            sortProducts(input, 'price-asc', 'pt-BR');
 
             expect(input.map(p => p.id)).toEqual(['a', 'b', 'c']);
         });
@@ -208,39 +208,39 @@ describe('product.utils', () => {
         ];
 
         it('always excludes inactive products', () => {
-            const ids = filterProducts(list, {}, 'pt-PT').map(p => p.id);
+            const ids = filterProducts(list, {}, 'pt-BR').map(p => p.id);
 
             expect(ids).not.toContain('d');
             expect(ids.length).toBe(3);
         });
 
         it('filters by category', () => {
-            expect(filterProducts(list, {categoryId: 'casa'}, 'pt-PT').map(p => p.id).sort())
+            expect(filterProducts(list, {categoryId: 'casa'}, 'pt-BR').map(p => p.id).sort())
                 .toEqual(['b', 'c']);
         });
 
         it('treats a falsy category as "all"', () => {
-            expect(filterProducts(list, {categoryId: null}, 'pt-PT').length).toBe(3);
-            expect(filterProducts(list, {categoryId: ''}, 'pt-PT').length).toBe(3);
+            expect(filterProducts(list, {categoryId: null}, 'pt-BR').length).toBe(3);
+            expect(filterProducts(list, {categoryId: ''}, 'pt-BR').length).toBe(3);
         });
 
         it('combines query, category and sort', () => {
             const result = filterProducts(
                 list,
                 {query: 'a', categoryId: 'casa', sort: 'price-asc'},
-                'pt-PT'
+                'pt-BR'
             );
 
             expect(result.map(p => p.id)).toEqual(['b', 'c']);
         });
 
         it('returns an empty list rather than throwing on no match', () => {
-            expect(filterProducts(list, {query: 'bicicleta'}, 'pt-PT')).toEqual([]);
+            expect(filterProducts(list, {query: 'bicicleta'}, 'pt-BR')).toEqual([]);
         });
 
         it('tolerates missing input', () => {
-            expect(filterProducts(null, null, 'pt-PT')).toEqual([]);
-            expect(filterProducts(undefined, {}, 'pt-PT')).toEqual([]);
+            expect(filterProducts(null, null, 'pt-BR')).toEqual([]);
+            expect(filterProducts(undefined, {}, 'pt-BR')).toEqual([]);
         });
     });
 });
