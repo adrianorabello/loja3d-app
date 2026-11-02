@@ -1,5 +1,18 @@
 # Fuse - Admin template and Starter project for Angular
 
+## Sign-in
+
+`/sign-in` follows the updated responsive prototype: blue product showcase and a
+white sign-in panel with pink accents. Below 840px the panels stack; there is one
+reactive form at every width, so resizing preserves credentials and pending state.
+The showcase loads up to three active products from the public API, newest first,
+using real names, photos and EUR prices. Empty/loading/error states do not block
+sign-in; catalogue errors offer a retry. The five-second carousel can be paused,
+pauses on hover/focus and respects reduced motion.
+Copy uses pt-PT with English/German translations. Authentication, remembered-session
+payload and redirect URLs are unchanged; recovery and registration link to the
+existing routes. No demonstration access or decorative social-login buttons.
+
 ## Support chat (opt-in)
 
 Customer `/account/chat[/:id]` and admin `/admin/chat[/:id]` reuse one workspace

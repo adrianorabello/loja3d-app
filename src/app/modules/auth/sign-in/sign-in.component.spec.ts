@@ -5,387 +5,289 @@ import { MatIconTestingModule } from '@angular/material/icon/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { BreakpointState } from '@angular/cdk/layout';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { BehaviorSubject, Subject } from 'rxjs';
 import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
 import { AuthService } from 'app/core/auth/auth.service';
+import { I18nService } from 'app/core/i18n/i18n.service';
+import { ProductService } from 'app/core/product/product.service';
 import { AuthSignInModule } from 'app/modules/auth/sign-in/sign-in.module';
-import { AUTH_WIDE_LAYOUT_QUERY, AuthSignInComponent } from 'app/modules/auth/sign-in/sign-in.component';
-import { environment } from 'environments/environment';
+import { AuthSignInComponent } from 'app/modules/auth/sign-in/sign-in.component';
+import { PRODUCT_IMAGE_PLACEHOLDER, Product } from 'app/shared/models/product.model';
 
-/**
- * Coverage for the responsive sign-in presentation.
- *
- * This spec is the safety net for the whole feature. The page swaps between two chromes at
- * 768px while keeping ONE form instance, and almost everything that could go wrong is
- * invisible by inspection: a destroyed form, a validator stripped on teardown, a duplicated
- * element id, or a second auth request fired because the submit guard was lost mid-swap.
- * Each of those gets an explicit assertion below.
- */
-describe('AuthSignInComponent (responsive presentation)', () => {
-
-    /**
-     * Stands in for `FuseMediaWatcherService`, which is otherwise provided by `FuseModule`.
-     *
-     * Backed by a `BehaviorSubject` on purpose: the real CDK `BreakpointObserver.observe()`
-     * emits its first state synchronously on subscribe, and the component relies on that to
-     * avoid a flicker frame. Using a BehaviorSubject reproduces that timing faithfully.
-     */
-    class MediaWatcherStub
-    {
-        readonly observedQueries: (string | string[])[] = [];
-
-        private _state: BehaviorSubject<BreakpointState> =
-            new BehaviorSubject<BreakpointState>({matches: false, breakpoints: {}});
-
-        get onMediaChange$(): Observable<{ matchingAliases: string[], matchingQueries: any }>
-        {
-            return of({matchingAliases: [], matchingQueries: {}});
-        }
-
-        onMediaQueryChange$(query: string | string[]): Observable<BreakpointState>
-        {
-            this.observedQueries.push(query);
-
-            return this._state.asObservable();
-        }
-
-        setWide(matches: boolean): void
-        {
-            this._state.next({matches, breakpoints: {}});
-        }
-    }
-
+describe('AuthSignInComponent', () => {
     let fixture: ComponentFixture<AuthSignInComponent>;
     let component: AuthSignInComponent;
-    let mediaWatcher: MediaWatcherStub;
     let httpMock: HttpTestingController;
+    let productService: jasmine.SpyObj<ProductService>;
+    let products: Subject<Product[]>;
+    let reducedMotion: BehaviorSubject<BreakpointState>;
 
-    const SIGN_IN_URL = 'api/auth/sign-in';
-
-    // --- DOM helpers -------------------------------------------------------------------------
-
-    const chrome = (): string | null => {
-        const el = fixture.nativeElement.querySelector('[data-chrome]');
-
-        return el ? el.getAttribute('data-chrome') : null;
-    };
-    const forms          = (): NodeList        => fixture.nativeElement.querySelectorAll('form');
-    const emailInputs    = (): NodeList        => fixture.nativeElement.querySelectorAll('#email');
-    const emailInput     = (): HTMLInputElement => fixture.nativeElement.querySelector('#email');
-    const passwordInput  = (): HTMLInputElement => fixture.nativeElement.querySelector('#password');
-    const submitButton   = (): HTMLButtonElement => fixture.nativeElement.querySelector('button.fuse-mat-button-large');
-    const decorativePanel = (): HTMLElement     => fixture.nativeElement.querySelector('.bg-gray-800');
-
-    /** Flip the viewport across the 768px boundary and settle the view. */
-    const setViewport = (wide: boolean): void => {
-        mediaWatcher.setWide(wide);
+    const makeProduct = (id: string, active: boolean = true): Product => ({
+        id, active, slug: id, name: {'pt-PT': `Peça ${id}`, en: `Piece ${id}`},
+        description: {'pt-PT': 'Descrição', en: 'Description'},
+        categoryId: 'category', price: 12.5, currency: 'EUR', colors: [],
+        images: [`assets/${id}.jpg`], stock: 5, madeToOrder: false,
+        featured: false, createdAt: '2026-01-01T00:00:00Z'
+    });
+    const emailInput = (): HTMLInputElement => fixture.nativeElement.querySelector('#email');
+    const passwordInput = (): HTMLInputElement => fixture.nativeElement.querySelector('#password');
+    const submitButton = (): HTMLButtonElement => fixture.nativeElement.querySelector('.login-submit');
+    const submit = (): void => {
+        fixture.nativeElement.querySelector('form').dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));
         fixture.detectChanges();
     };
-
-    /** Put valid credentials into the DOM, so the model is driven the way a user would. */
-    const typeCredentials = (email: string, password: string): void => {
-        const emailEl = emailInput();
-        const pwEl    = passwordInput();
-
-        emailEl.value = email;
-        emailEl.dispatchEvent(new Event('input'));
-        pwEl.value = password;
-        pwEl.dispatchEvent(new Event('input'));
+    const typeCredentials = (): void => {
+        emailInput().value = 'customer@example.com';
+        emailInput().dispatchEvent(new Event('input'));
+        passwordInput().value = 'password123';
+        passwordInput().dispatchEvent(new Event('input'));
+        fixture.detectChanges();
+    };
+    const loadSlides = (): void => {
+        products.next([makeProduct('one'), makeProduct('two'), makeProduct('three')]);
+        products.complete();
         fixture.detectChanges();
     };
 
     beforeEach(() => {
-        // Each spec starts from a clean session — the success path writes a token.
+        jasmine.clock().install();
         localStorage.removeItem('access_token');
-
-        mediaWatcher = new MediaWatcherStub();
+        products = new Subject<Product[]>();
+        reducedMotion = new BehaviorSubject<BreakpointState>({matches: false, breakpoints: {}});
+        productService = jasmine.createSpyObj<ProductService>('ProductService', ['getProducts']);
+        productService.getProducts.and.returnValue(products.asObservable());
 
         TestBed.configureTestingModule({
-            imports  : [
-                AuthSignInModule,
-                RouterTestingModule,
-                HttpClientTestingModule,
-                NoopAnimationsModule,
-                MatIconTestingModule
+            imports: [
+                AuthSignInModule, RouterTestingModule, HttpClientTestingModule,
+                NoopAnimationsModule, MatIconTestingModule, TranslateModule.forRoot()
             ],
             providers: [
                 AuthService,
-                {provide: FuseMediaWatcherService, useValue: mediaWatcher}
+                {provide: ProductService, useValue: productService},
+                {provide: FuseMediaWatcherService, useValue: {onMediaQueryChange$: () => reducedMotion.asObservable()}}
             ]
         });
-
-        httpMock  = TestBed.inject(HttpTestingController);
-        fixture   = TestBed.createComponent(AuthSignInComponent);
+        TestBed.inject(I18nService).use('en');
+        httpMock = TestBed.inject(HttpTestingController);
+        fixture = TestBed.createComponent(AuthSignInComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
     });
 
     afterEach(() => {
+        fixture.destroy();
+        httpMock.verify({ignoreCancelled: true});
         localStorage.removeItem('access_token');
+        jasmine.clock().uninstall();
     });
 
-    // -----------------------------------------------------------------------------------------
-    // @ Presentation switching
-    // -----------------------------------------------------------------------------------------
-
-    it('observes exactly the 768px media query', () => {
-        expect(mediaWatcher.observedQueries).toContain(AUTH_WIDE_LAYOUT_QUERY);
-        expect(AUTH_WIDE_LAYOUT_QUERY).toBe('(min-width: 768px)');
-    });
-
-    it('uses real authentication by default without prefilling demo admin credentials', () => {
-        expect(environment.useMockApi).toBeFalse();
+    it('renders exactly one form with labelled, autofill-enabled inputs and no demo credentials', () => {
+        expect(fixture.nativeElement.querySelectorAll('form').length).toBe(1);
+        expect(fixture.nativeElement.querySelectorAll('#email').length).toBe(1);
         expect(emailInput().value).toBe('');
         expect(passwordInput().value).toBe('');
+        expect(emailInput().type).toBe('email');
+        expect(emailInput().autocomplete).toBe('email');
+        expect(passwordInput().autocomplete).toBe('current-password');
+        expect(fixture.nativeElement.querySelector('label[for="email"]')).not.toBeNull();
+        expect(fixture.nativeElement.querySelector('label[for="password"]')).not.toBeNull();
         expect(component.signInForm.value.rememberMe).toBeFalse();
     });
 
-    it('renders fullscreen form-only below 768px, without a floating card', () => {
-        setViewport(false);
-
-        expect(chrome()).toBe('fullscreen-compact');
-        expect(decorativePanel()).toBeNull();
-        const wrapper: HTMLElement = fixture.nativeElement.querySelector('[data-chrome]');
-        expect(wrapper.classList.contains('min-h-screen')).toBeTrue();
-        expect(wrapper.classList.contains('w-full')).toBeTrue();
-        expect(fixture.nativeElement.querySelector('[class*="rounded-2xl"], [class*="shadow"]')).toBeNull();
-    });
-
-    it('renders Fullscreen Reversed at 768px and above, without card margins or maximum width', () => {
-        setViewport(true);
-
-        expect(chrome()).toBe('fullscreen');
-        const wrapper: HTMLElement = fixture.nativeElement.querySelector('[data-chrome]');
-        expect(wrapper.classList.contains('min-h-screen')).toBeTrue();
-        expect(wrapper.classList.contains('w-full')).toBeTrue();
-        expect(wrapper.classList.contains('items-stretch')).toBeTrue();
-        expect(fixture.nativeElement.querySelector('.max-w-6xl, [class*="rounded-2xl"], [class*="shadow"]')).toBeNull();
-
-        // The panel must actually be in the DOM, not merely present-but-hidden. Upstream Fuse
-        // gates it on `md:` (960px), which would leave it hidden across 768-959 — the exact
-        // band this feature introduces.
-        expect(decorativePanel()).not.toBeNull();
-    });
-
-    it('resolves to fullscreen form-only when the media state is unknown', () => {
-        // `isWideViewport` is intentionally left undefined, so a no-matchMedia environment
-        // falls back to the narrow presentation rather than rendering nothing.
-        component.isWideViewport = undefined;
+    it('loads real newest active products and limits the showcase to three', () => {
+        expect(productService.getProducts).toHaveBeenCalledWith({sort: 'newest'});
+        products.next([makeProduct('hidden', false), makeProduct('one'), makeProduct('two'), makeProduct('three'), makeProduct('four')]);
         fixture.detectChanges();
 
-        expect(chrome()).toBe('fullscreen-compact');
+        expect(component.products.map(product => product.id)).toEqual(['one', 'two', 'three']);
+        expect(fixture.nativeElement.querySelector('.featured-product-copy').textContent).toContain('Piece one');
+        expect(fixture.nativeElement.querySelector('.product-art').getAttribute('src')).toBe('assets/one.jpg');
+        expect(fixture.nativeElement.querySelector('.showcase-price').textContent).toContain('12.50');
     });
 
-    // -----------------------------------------------------------------------------------------
-    // @ Accessibility: exactly one of everything
-    // -----------------------------------------------------------------------------------------
-
-    it('keeps exactly one form and one #email element at every width', () => {
-        setViewport(false);
-        expect(forms().length).toBe(1);
-        expect(emailInputs().length).toBe(1);
-
-        setViewport(true);
-        expect(forms().length).toBe(1);
-        expect(emailInputs().length).toBe(1);
-    });
-
-    // -----------------------------------------------------------------------------------------
-    // @ State preservation across a swap
-    // -----------------------------------------------------------------------------------------
-
-    it('preserves typed values across a breakpoint change, in both the model and the DOM', () => {
-        setViewport(false);
-        typeCredentials('someone@clararosa.pt', 'hunter2');
-
-        setViewport(true);
-
-        // The model is the source of truth and lives on the component, not the view.
-        expect(component.signInForm.value.email).toBe('someone@clararosa.pt');
-        expect(component.signInForm.value.password).toBe('hunter2');
-
-        // And the newly instantiated chrome must be painted with those values — this is the
-        // `writeValue(control.value)` re-bind actually working, not just the model surviving.
-        expect(emailInput().value).toBe('someone@clararosa.pt');
-        expect(passwordInput().value).toBe('hunter2');
-    });
-
-    it('does not drop validators across repeated breakpoint changes', () => {
-        for ( let i = 0; i < 10; i++ )
-        {
-            setViewport(i % 2 === 0);
-        }
-
-        const email = component.signInForm.get('email');
-
-        email.setValue('');
-        expect(email.hasError('required')).toBe(true);
-
-        email.setValue('not-an-email');
-        expect(email.hasError('email')).toBe(true);
-
-        email.setValue('valid@clararosa.pt');
-        expect(email.valid).toBe(true);
-    });
-
-    // -----------------------------------------------------------------------------------------
-    // @ Submission
-    // -----------------------------------------------------------------------------------------
-
-    it('issues exactly one request per submit and disables the form while in flight', () => {
-        setViewport(false);
-        typeCredentials('admin@clararosa.pt', 'admin');
-
-        submitButton().click();
+    it('shows loading and empty states without hiding the login form', () => {
+        expect(component.productsLoading).toBeTrue();
+        expect(fixture.nativeElement.querySelector('[role="status"]')).not.toBeNull();
+        products.next([]);
         fixture.detectChanges();
-
-        const requests = httpMock.match(SIGN_IN_URL);
-        expect(requests.length).toBe(1);
-        expect(requests[0].request.body.rememberMe).toBeFalse();
-        expect(component.signInForm.disabled).toBe(true);
-        expect(submitButton().disabled).toBe(true);
+        expect(component.productsLoading).toBeFalse();
+        expect(fixture.nativeElement.textContent).toContain('signIn.noProducts');
+        expect(fixture.nativeElement.querySelector('form')).not.toBeNull();
+        expect(fixture.nativeElement.querySelector('.showcase-product')).toBeNull();
     });
 
-    it('stays disabled and does not re-request when the breakpoint flips mid-flight', () => {
-        setViewport(false);
-        typeCredentials('admin@clararosa.pt', 'admin');
-
-        submitButton().click();
+    it('shows a catalogue error and retries without blocking sign-in', () => {
+        products.error(new Error('Catalogue unavailable'));
         fixture.detectChanges();
+        expect(component.productsError).toBeTrue();
+        expect(submitButton().disabled).toBeFalse();
+        expect(fixture.nativeElement.querySelector('[role="alert"]').textContent).toContain('signIn.productsError');
 
-        const inFlight = httpMock.match(SIGN_IN_URL);
-        expect(inFlight.length).toBe(1);
-
-        // Swap presentation while the request is outstanding.
-        setViewport(true);
-
-        // The re-bound controls must come back disabled, or the user could submit twice.
-        expect(component.signInForm.disabled).toBe(true);
-        expect(submitButton().disabled).toBe(true);
-        expect(emailInput().disabled).toBe(true);
-        expect(httpMock.match(SIGN_IN_URL).length).toBe(0);
+        products = new Subject<Product[]>();
+        productService.getProducts.and.returnValue(products.asObservable());
+        fixture.nativeElement.querySelector('.showcase-retry').click();
+        loadSlides();
+        expect(component.productsError).toBeFalse();
+        expect(component.products.length).toBe(3);
     });
 
-    it('does not submit an invalid form', () => {
-        setViewport(false);
-        typeCredentials('not-an-email', '');
-
-        submitButton().click();
+    it('uses the standard placeholder for missing and broken images', () => {
+        products.next([{...makeProduct('one'), images: []}]);
         fixture.detectChanges();
-
-        expect(httpMock.match(SIGN_IN_URL).length).toBe(0);
-        expect(component.signInForm.disabled).toBe(false);
+        const image: HTMLImageElement = fixture.nativeElement.querySelector('.product-art');
+        expect(image.getAttribute('src')).toBe(PRODUCT_IMAGE_PLACEHOLDER);
+        image.src = '/missing.jpg';
+        image.dispatchEvent(new Event('error'));
+        expect(image.getAttribute('src')).toBe(PRODUCT_IMAGE_PLACEHOLDER);
     });
 
-    // -----------------------------------------------------------------------------------------
-    // @ Error handling — proves the model reset matches NgForm.resetForm()
-    // -----------------------------------------------------------------------------------------
-
-    it('shows the alert and clears the form on a failed sign in', () => {
-        setViewport(false);
-        typeCredentials('admin@clararosa.pt', 'wrong');
-
-        submitButton().click();
-        fixture.detectChanges();
-
-        httpMock.expectOne(SIGN_IN_URL).flush(false, {status: 404, statusText: 'Not Found'});
-        fixture.detectChanges();
-
-        expect(component.showAlert).toBe(true);
-        expect(component.alert.type).toBe('error');
-        expect(fixture.nativeElement.querySelector('fuse-alert')).not.toBeNull();
-
-        // Re-enabled, cleared, and back to pristine/untouched — the behaviour `resetForm()`
-        // provided before the `@ViewChild` was removed.
-        expect(component.signInForm.disabled).toBe(false);
-        expect(component.signInForm.get('email').value).toBeFalsy();
-        expect(component.signInForm.get('password').value).toBeFalsy();
-        expect(component.signInForm.pristine).toBe(true);
-        expect(component.signInForm.untouched).toBe(true);
+    it('rotates every five seconds and wraps back to the first slide', () => {
+        spyOnProperty(document, 'visibilityState', 'get').and.returnValue('visible');
+        loadSlides();
+        jasmine.clock().tick(4999);
+        expect(component.activeSlide).toBe(0);
+        jasmine.clock().tick(1);
+        expect(component.activeSlide).toBe(1);
+        jasmine.clock().tick(10000);
+        expect(component.activeSlide).toBe(0);
     });
 
-    it('clears the form on failure in the Fullscreen Reversed chrome too', () => {
-        // The error path must not depend on which chrome happens to be mounted.
-        setViewport(true);
-        typeCredentials('admin@clararosa.pt', 'wrong');
-
-        submitButton().click();
+    it('supports manual selection and a persistent pause control', () => {
+        loadSlides();
+        const dots = fixture.nativeElement.querySelectorAll('.carousel-dot');
+        dots[2].click();
         fixture.detectChanges();
-
-        httpMock.expectOne(SIGN_IN_URL).flush(false, {status: 404, statusText: 'Not Found'});
-        fixture.detectChanges();
-
-        expect(component.showAlert).toBe(true);
-        expect(component.signInForm.get('email').value).toBeFalsy();
-        expect(component.signInForm.pristine).toBe(true);
+        expect(component.activeSlide).toBe(2);
+        expect(dots[2].getAttribute('aria-pressed')).toBe('true');
+        fixture.nativeElement.querySelector('.carousel-pause').click();
+        jasmine.clock().tick(10000);
+        expect(component.activeSlide).toBe(2);
     });
 
-    // -----------------------------------------------------------------------------------------
-    // @ Redirect behaviour
-    // -----------------------------------------------------------------------------------------
+    it('does not rotate when hovered, focused, or reduced motion is enabled', () => {
+        loadSlides();
+        component.carouselHovered = true;
+        jasmine.clock().tick(5000);
+        expect(component.activeSlide).toBe(0);
+        component.carouselHovered = false;
+        component.carouselFocused = true;
+        jasmine.clock().tick(5000);
+        expect(component.activeSlide).toBe(0);
+        component.carouselFocused = false;
+        reducedMotion.next({matches: true, breakpoints: {}});
+        fixture.detectChanges();
+        jasmine.clock().tick(10000);
+        expect(component.activeSlide).toBe(0);
+        expect(fixture.nativeElement.querySelector('.carousel-pause')).toBeNull();
+        fixture.nativeElement.querySelectorAll('.carousel-dot')[1].click();
+        expect(component.activeSlide).toBe(1);
+    });
 
-    it('navigates to /signed-in-redirect when no redirectURL is present', () => {
-        const router = TestBed.inject(Router);
-        const navigate = spyOn(router, 'navigateByUrl').and.returnValue(Promise.resolve(true));
+    it('stops rotation and ignores late catalogue responses after destruction', () => {
+        fixture.destroy();
+        products.next([makeProduct('late')]);
+        jasmine.clock().tick(10000);
+        expect(component.products).toEqual([]);
+    });
 
-        setViewport(false);
-        typeCredentials('admin@clararosa.pt', 'admin');
-        submitButton().click();
+    it('submits once through the form, sends rememberMe and disables controls while pending', () => {
+        typeCredentials();
+        component.signInForm.get('rememberMe').setValue(true);
+        submit();
+        component.signIn();
+        submit();
+        const request = httpMock.expectOne('api/auth/sign-in');
+        expect(request.request.body.rememberMe).toBeTrue();
+        expect(request.request.body.email).toBe('customer@example.com');
+        expect(submitButton().disabled).toBeTrue();
+        expect(emailInput().disabled).toBeTrue();
+        expect(passwordInput().disabled).toBeTrue();
+    });
 
-        httpMock.expectOne(SIGN_IN_URL).flush({
-            access_token: 'header.eyJzdWIiOiIxIn0.signature',
-            token_type  : 'bearer',
-            user        : {id: '1', name: 'Admin', email: 'admin@clararosa.pt', role: 'ADMIN'}
+    it('does not submit invalid credentials and exposes validation errors', () => {
+        submit();
+        httpMock.expectNone('api/auth/sign-in');
+        expect(emailInput().getAttribute('aria-invalid')).toBe('true');
+        expect(fixture.nativeElement.querySelector('#email-error').textContent).toContain('signIn.emailRequired');
+        expect(fixture.nativeElement.querySelector('#password-error')).not.toBeNull();
+    });
+
+    it('rejects an invalid email without sending a request', () => {
+        typeCredentials();
+        component.signInForm.get('email').setValue('invalid');
+        submit();
+        httpMock.expectNone('api/auth/sign-in');
+        expect(fixture.nativeElement.querySelector('#email-error').textContent).toContain('signIn.emailInvalid');
+    });
+
+    it('shows the sign-in error, remasks the password and clears submitted state after failure', () => {
+        typeCredentials();
+        component.showPassword = true;
+        submit();
+        httpMock.expectOne('api/auth/sign-in').flush({}, {status: 401, statusText: 'Unauthorized'});
+        fixture.detectChanges();
+        expect(component.showAlert).toBeTrue();
+        expect(fixture.nativeElement.querySelector('.login-error[role="alert"]')).not.toBeNull();
+        expect(component.signInForm.enabled).toBeTrue();
+        expect(passwordInput().type).toBe('password');
+        expect(emailInput().value).toBe('');
+        expect(component.signInForm.get('rememberMe').value).toBeFalse();
+        expect(component.signInForm.pristine).toBeTrue();
+        expect(component.signInForm.untouched).toBeTrue();
+        expect(fixture.nativeElement.querySelector('#email-error')).toBeNull();
+    });
+
+    it('preserves the default redirect after successful authentication', () => {
+        const navigate = spyOn(TestBed.inject(Router), 'navigateByUrl').and.returnValue(Promise.resolve(true));
+        typeCredentials();
+        submit();
+        httpMock.expectOne('api/auth/sign-in').flush({
+            access_token: 'token', token_type: 'bearer',
+            user: {id: 'customer', name: 'Customer', email: 'customer@example.com', role: 'CUSTOMER'}
         });
-
         expect(navigate).toHaveBeenCalledWith('/signed-in-redirect');
     });
 
-    it('honours the redirectURL query parameter', () => {
-        const router = TestBed.inject(Router);
-        const navigate = spyOn(router, 'navigateByUrl').and.returnValue(Promise.resolve(true));
-
-        // Patch the real ActivatedRoute rather than replacing it, so routerLink directives in
-        // the template keep working.
-        //
-        // `queryParamMap` is a getter with no setter, and it memoises into `_queryParamMap` on
-        // first read, so set the underlying `queryParams` and prime the memo to match.
-        const snapshot = TestBed.inject(ActivatedRoute).snapshot as any;
-        snapshot.queryParams    = {redirectURL: '/account/orders'};
-        snapshot._queryParamMap = convertToParamMap(snapshot.queryParams);
-
-        setViewport(true);
-        typeCredentials('cliente@clararosa.pt', 'cliente');
-        submitButton().click();
-
-        httpMock.expectOne(SIGN_IN_URL).flush({
-            access_token: 'header.eyJzdWIiOiIyIn0.signature',
-            token_type  : 'bearer',
-            user        : {id: '2', name: 'Cliente', email: 'cliente@clararosa.pt', role: 'CUSTOMER'}
+    it('honours the redirectURL query parameter and preserves it on the sign-up link', () => {
+        const route = TestBed.inject(ActivatedRoute);
+        const params = {redirectURL: '/account/requests'};
+        route.snapshot.queryParams = params;
+        spyOnProperty(route.snapshot, 'queryParamMap', 'get').and.returnValue(convertToParamMap(params));
+        const navigate = spyOn(TestBed.inject(Router), 'navigateByUrl').and.returnValue(Promise.resolve(true));
+        typeCredentials();
+        submit();
+        httpMock.expectOne('api/auth/sign-in').flush({
+            access_token: 'token', token_type: 'bearer',
+            user: {id: 'customer', name: 'Customer', email: 'customer@example.com', role: 'CUSTOMER'}
         });
-
-        expect(navigate).toHaveBeenCalledWith('/account/orders');
+        expect(navigate).toHaveBeenCalledWith('/account/requests');
+        expect(fixture.nativeElement.querySelector('.login-signup a').getAttribute('href')).toContain('/sign-up');
     });
 
-    // -----------------------------------------------------------------------------------------
-    // @ Password visibility
-    // -----------------------------------------------------------------------------------------
+    it('toggles password visibility without submitting and links to password recovery', () => {
+        const toggle: HTMLButtonElement = fixture.nativeElement.querySelector('.password-toggle');
+        toggle.click();
+        fixture.detectChanges();
+        expect(passwordInput().type).toBe('text');
+        expect(toggle.getAttribute('aria-pressed')).toBe('true');
+        toggle.click();
+        fixture.detectChanges();
+        expect(passwordInput().type).toBe('password');
+        httpMock.expectNone('api/auth/sign-in');
+        expect(fixture.nativeElement.querySelector('.login-options a').getAttribute('href')).toBe('/forgot-password');
+    });
 
-    it('toggles password visibility in both chromes', () => {
-        [false, true].forEach((wide) => {
-            setViewport(wide);
-
-            const toggle = fixture.nativeElement.querySelector('button[mat-icon-button]') as HTMLButtonElement;
-
-            expect(passwordInput().type).toBe('password');
-
-            toggle.click();
-            fixture.detectChanges();
-            expect(passwordInput().type).toBe('text');
-
-            toggle.click();
-            fixture.detectChanges();
-            expect(passwordInput().type).toBe('password');
-        });
+    it('renders translated labels when the language changes', () => {
+        const translate = TestBed.inject(TranslateService);
+        translate.setTranslation('en', {signIn: {title: 'Sign in to your account', password: 'Password'}});
+        translate.setTranslation('de', {signIn: {title: 'Bei Ihrem Konto anmelden', password: 'Passwort'}});
+        fixture.detectChanges();
+        expect(fixture.nativeElement.querySelector('#login-title').textContent).toBe('Sign in to your account');
+        TestBed.inject(I18nService).use('de');
+        fixture.detectChanges();
+        expect(fixture.nativeElement.querySelector('#login-title').textContent).toBe('Bei Ihrem Konto anmelden');
+        expect(fixture.nativeElement.querySelector('label[for="password"]').textContent).toBe('Passwort');
     });
 });

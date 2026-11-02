@@ -1,268 +1,120 @@
-<!--
-    Fullscreen sign-in: form-only below 768px, Fuse Fullscreen Reversed at 768px and above.
-
-    Exactly ONE chrome is instantiated at a time. That is a correctness requirement, not an
-    optimisation: rendering both and hiding one with CSS would put two `id="email"`, two
-    `id="password"` and two `<form>` elements in the DOM simultaneously, which invalidates every
-    `<label for>` association Material generates and lets screen-reader users tab into invisible
-    controls.
-
-    The form itself lives in `#formContent` and therefore exists exactly once in this file — the
-    two chromes are pure wrappers around the same authentication controls.
-
-    Swapping the chrome destroys an embedded view, never the component, so `signInForm` and every
-    control's value, validator and disabled state survive the swap. See the class for the details.
--->
-<ng-container *ngTemplateOutlet="isWideViewport ? fullscreenChrome : compactChrome"></ng-container>
-
-
-<!-- ============================================================================================ -->
-<!-- @ Shared form content — the single copy, projected into both chromes                         -->
-<!-- ============================================================================================ -->
-<ng-template #formContent>
-
-    <!-- Logo -->
-    <div>
-        <img class="h-8 w-auto" src="assets/images/logo/printoy-purple.svg" alt="Printoy 3D">
-    </div>
-
-    <!-- Title -->
-    <div class="mt-8 text-4xl font-extrabold tracking-tight leading-tight">Sign in</div>
-    <div class="flex items-baseline mt-0.5 font-medium">
-        <div>Don't have an account?</div>
-        <a
-            class="ml-1 text-primary-500 hover:underline"
-            [routerLink]="['/sign-up']"
-            queryParamsHandling="preserve">Sign up
-        </a>
-    </div>
-
-    <!-- Alert -->
-    <fuse-alert
-        class="mt-8 -mb-4"
-        *ngIf="showAlert"
-        [appearance]="'outline'"
-        [showIcon]="false"
-        [type]="alert.type"
-        [@shake]="alert.type === 'error'">
-        {{alert.message}}
-    </fuse-alert>
-
-    <!-- Sign in form -->
-    <form
-        class="mt-8"
-        [formGroup]="signInForm"
-        #signInNgForm="ngForm">
-
-        <!-- Email field -->
-        <mat-form-field class="w-full">
-            <mat-label>Email address</mat-label>
-            <input
-                id="email"
-                matInput
-                [formControlName]="'email'">
-            <mat-error *ngIf="signInForm.get('email').hasError('required')">
-                Email address is required
-            </mat-error>
-            <mat-error *ngIf="signInForm.get('email').hasError('email')">
-                Please enter a valid email address
-            </mat-error>
-        </mat-form-field>
-
-        <!-- Password field -->
-        <mat-form-field class="w-full">
-            <mat-label>Password</mat-label>
-            <input
-                id="password"
-                matInput
-                type="password"
-                [formControlName]="'password'"
-                #passwordField>
-            <!--
-                Visibility is template-local state, so it resets to masked when the presentation
-                swaps. That is deliberate and safer than preserving it — a revealed password
-                surviving a layout change would be a small leak. The toggle itself behaves
-                identically in both chromes because it lives here, in the shared content.
-            -->
-            <button
-                mat-icon-button
-                type="button"
-                [attr.aria-label]="passwordField.type === 'password' ? 'Show password' : 'Hide password'"
-                [attr.aria-pressed]="passwordField.type === 'text'"
-                (click)="passwordField.type === 'password' ? passwordField.type = 'text' : passwordField.type = 'password'"
-                matSuffix>
-                <mat-icon
-                    class="icon-size-5"
-                    *ngIf="passwordField.type === 'password'"
-                    [svgIcon]="'heroicons_solid:eye'"></mat-icon>
-                <mat-icon
-                    class="icon-size-5"
-                    *ngIf="passwordField.type === 'text'"
-                    [svgIcon]="'heroicons_solid:eye-off'"></mat-icon>
-            </button>
-            <mat-error>
-                Password is required
-            </mat-error>
-        </mat-form-field>
-
-        <!-- Actions -->
-        <div class="inline-flex items-end justify-between w-full mt-1.5">
-            <mat-checkbox
-                [color]="'primary'"
-                [formControlName]="'rememberMe'">
-                Remember me
-            </mat-checkbox>
-            <a
-                class="text-md font-medium text-primary-500 hover:underline"
-                [routerLink]="['/forgot-password']">Forgot password?
+<main class="login-page">
+    <section class="login-showcase" [attr.aria-label]="'signIn.showcaseLabel' | translate">
+        <div class="showcase-shape shape-top" aria-hidden="true"></div>
+        <div class="showcase-shape shape-bottom" aria-hidden="true"></div>
+        <div class="showcase-dots" aria-hidden="true"></div>
+        <div class="showcase-brand">
+            <a routerLink="/products">
+                <img src="assets/images/logo/printoy-white.svg" alt="Printoy 3D">
             </a>
+            <span>{{ 'signIn.tagline' | translate }}</span>
         </div>
 
-        <!-- Submit button -->
-        <button
-            class="fuse-mat-button-large w-full mt-6"
-            mat-flat-button
-            [color]="'primary'"
-            [disabled]="signInForm.disabled"
-            (click)="signIn()">
-            <span *ngIf="!signInForm.disabled">
-                Sign in
-            </span>
-            <mat-progress-spinner
-                *ngIf="signInForm.disabled"
-                [diameter]="24"
-                [mode]="'indeterminate'"></mat-progress-spinner>
-        </button>
-
-        <!-- Separator -->
-        <div class="flex items-center mt-8">
-            <div class="flex-auto mt-px border-t"></div>
-            <div class="mx-2 text-secondary">Or continue with</div>
-            <div class="flex-auto mt-px border-t"></div>
-        </div>
-
-        <!-- Single sign-on buttons -->
-        <div class="flex items-center mt-8 space-x-4">
-            <button
-                class="flex-auto"
-                type="button"
-                mat-stroked-button>
-                <mat-icon
-                    class="icon-size-5"
-                    [svgIcon]="'feather:facebook'"></mat-icon>
-            </button>
-            <button
-                class="flex-auto"
-                type="button"
-                mat-stroked-button>
-                <mat-icon
-                    class="icon-size-5"
-                    [svgIcon]="'feather:twitter'"></mat-icon>
-            </button>
-            <button
-                class="flex-auto"
-                type="button"
-                mat-stroked-button>
-                <mat-icon
-                    class="icon-size-5"
-                    [svgIcon]="'feather:github'"></mat-icon>
-            </button>
-        </div>
-    </form>
-
-</ng-template>
-
-
-<!-- ============================================================================================ -->
-<!-- @ Fullscreen form-only chrome — rendered below 768px                                         -->
-<!-- ============================================================================================ -->
-<ng-template #compactChrome>
-
-    <div class="flex flex-col flex-auto items-center justify-center w-full min-h-screen min-w-0 bg-card" data-chrome="fullscreen-compact">
-        <div class="w-full py-8 px-4 sm:p-12">
-            <div class="w-full max-w-80 mx-auto">
-                <ng-container *ngTemplateOutlet="formContent"></ng-container>
-            </div>
-        </div>
-    </div>
-
-</ng-template>
-
-
-<!-- ============================================================================================ -->
-<!-- @ Fuse Fullscreen Reversed chrome — rendered at 768px and above                               -->
-<!-- ============================================================================================ -->
-<!--
-    Fuse's md breakpoint is 960px. The existing 768px media watcher controls this
-    wrapper instead, preserving form state when the viewport changes.
--->
-<ng-template #fullscreenChrome>
-
-    <div class="flex flex-row flex-auto items-stretch w-full min-h-screen min-w-0 bg-card" data-chrome="fullscreen">
-
-            <!-- Decorative panel. Leads in the DOM, hence "reversed". -->
-            <div class="relative flex flex-auto min-w-0 items-center justify-center p-8 lg:p-16 xl:px-28 overflow-hidden bg-gray-800 dark:border-r">
-                <!-- Background - @formatter:off -->
-                <!-- Rings -->
-                <svg class="absolute inset-0 pointer-events-none" aria-hidden="true"
-                     viewBox="0 0 960 540" width="100%" height="100%" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
-                    <g class="text-gray-700 opacity-25" fill="none" stroke="currentColor" stroke-width="100">
-                        <circle r="234" cx="196" cy="23"></circle>
-                        <circle r="234" cx="790" cy="491"></circle>
-                    </g>
-                </svg>
-                <!-- Dots -->
-                <!--
-                    The `pattern` id below is document-global. Harmless while only one chrome is
-                    instantiated at a time; do not render both chromes simultaneously.
-                -->
-                <svg class="absolute -top-16 -right-16 text-gray-700" aria-hidden="true"
-                     viewBox="0 0 220 192" width="220" height="192" fill="none">
-                    <defs>
-                        <pattern id="837c3e70-6c3a-44e6-8854-cc48c737b659" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-                            <rect x="0" y="0" width="4" height="4" fill="currentColor"></rect>
-                        </pattern>
-                    </defs>
-                    <rect width="220" height="192" fill="url(#837c3e70-6c3a-44e6-8854-cc48c737b659)"></rect>
-                </svg>
-                <!-- @formatter:on -->
-                <!-- Content -->
-                <div class="z-10 relative w-full max-w-2xl">
-                    <div class="text-4xl lg:text-7xl font-bold leading-none text-gray-100">
-                        <div>Welcome to</div>
-                        <div>our community</div>
-                    </div>
-                    <div class="mt-6 text-base lg:text-lg tracking-tight leading-6 text-gray-400">
-                        Fuse helps developers to build organized and well coded dashboards full of beautiful and rich modules.
-                        Join us and start building your application today.
-                    </div>
-                    <div class="flex items-center mt-8">
-                        <div class="flex flex-0 items-center -space-x-1.5">
-                            <img
-                                class="flex-0 w-10 h-10 rounded-full ring-4 ring-offset-1 ring-gray-800 ring-offset-gray-800 object-cover"
-                                src="assets/images/avatars/female-18.jpg">
-                            <img
-                                class="flex-0 w-10 h-10 rounded-full ring-4 ring-offset-1 ring-gray-800 ring-offset-gray-800 object-cover"
-                                src="assets/images/avatars/female-11.jpg">
-                            <img
-                                class="flex-0 w-10 h-10 rounded-full ring-4 ring-offset-1 ring-gray-800 ring-offset-gray-800 object-cover"
-                                src="assets/images/avatars/male-09.jpg">
-                            <img
-                                class="flex-0 w-10 h-10 rounded-full ring-4 ring-offset-1 ring-gray-800 ring-offset-gray-800 object-cover"
-                                src="assets/images/avatars/male-16.jpg">
-                        </div>
-                        <div class="ml-4 font-medium tracking-tight text-gray-400">More than 17k people joined us, it's your turn</div>
-                    </div>
+        <div class="showcase-carousel"
+             (mouseenter)="carouselHovered = true" (mouseleave)="carouselHovered = false"
+             (focusin)="carouselFocused = true" (focusout)="carouselFocused = false">
+            <div class="showcase-copy">
+                <span class="showcase-kicker">
+                    <mat-icon svgIcon="heroicons_outline:sparkles" aria-hidden="true"></mat-icon>
+                    {{ 'signIn.newInStore' | translate }}
+                </span>
+                <h1>{{ 'signIn.showcaseTitle' | translate }}</h1>
+                <p>{{ 'signIn.showcaseDescription' | translate }}</p>
+                <div class="featured-product-copy" *ngIf="activeProduct as product">
+                    <span>{{ 'signIn.featured' | translate }}</span>
+                    <strong>{{ product.name | localizedText }}</strong>
+                    <small>{{ product.description | localizedText }}</small>
                 </div>
+                <p class="showcase-status" *ngIf="productsLoading" role="status">{{ 'signIn.loadingProducts' | translate }}</p>
+                <div class="showcase-status" *ngIf="productsError" role="alert">
+                    <p>{{ 'signIn.productsError' | translate }}</p>
+                    <button type="button" class="showcase-retry" (click)="loadProducts()">{{ 'signIn.retry' | translate }}</button>
+                </div>
+                <p class="showcase-status" *ngIf="!productsLoading && !productsError && !products.length">
+                    {{ 'signIn.noProducts' | translate }}
+                </p>
             </div>
 
-            <!-- Form column -->
-            <div class="flex flex-0 items-center w-auto p-8 lg:p-16">
-                <div class="w-full max-w-80 sm:w-80 mx-auto sm:mx-0">
-                    <ng-container *ngTemplateOutlet="formContent"></ng-container>
-            </div>
+            <article class="showcase-product" *ngIf="activeProduct as product">
+                <span class="new-badge">{{ 'signIn.featured' | translate }}</span>
+                <img class="product-art" [src]="product.images[0] || placeholder"
+                     [alt]="product.name | localizedText" (error)="onImageError($event)">
+                <div class="showcase-price">
+                    <span>{{ 'signIn.from' | translate }}</span>
+                    <strong>{{ product.price | appCurrency }}</strong>
+                </div>
+            </article>
 
+            <div class="carousel-controls" *ngIf="products.length > 1" [attr.aria-label]="'signIn.chooseProduct' | translate">
+                <button *ngFor="let product of products; let index = index" type="button"
+                        class="carousel-dot" [class.active]="index === activeSlide"
+                        [attr.aria-label]="'signIn.viewProduct' | translate:{name: (product.name | localizedText)}"
+                        [attr.aria-pressed]="index === activeSlide"
+                        (click)="activeSlide = index"></button>
+                <button type="button" class="carousel-pause" *ngIf="!reducedMotion"
+                        [attr.aria-label]="(carouselPaused ? 'signIn.resumeCarousel' : 'signIn.pauseCarousel') | translate"
+                        [attr.aria-pressed]="carouselPaused" (click)="carouselPaused = !carouselPaused">
+                    <mat-icon [svgIcon]="carouselPaused ? 'heroicons_solid:play' : 'heroicons_solid:pause'" aria-hidden="true"></mat-icon>
+                </button>
+            </div>
         </div>
-    </div>
+    </section>
 
-</ng-template>
+    <section class="login-panel" aria-labelledby="login-title">
+        <div class="login-card">
+            <a class="login-logo" routerLink="/products">
+                <img src="assets/images/logo/printoy-purple.svg" alt="Printoy 3D">
+            </a>
+            <div class="login-heading">
+                <span class="login-eyebrow">{{ 'signIn.welcome' | translate }}</span>
+                <h2 id="login-title">{{ 'signIn.title' | translate }}</h2>
+                <p>{{ 'signIn.description' | translate }}</p>
+            </div>
+
+            <form class="login-form" [formGroup]="signInForm" #signInNgForm="ngForm" (ngSubmit)="signIn()">
+                <div class="login-field">
+                    <label for="email">{{ 'signIn.email' | translate }}</label>
+                    <input id="email" type="email" formControlName="email" autocomplete="email"
+                           placeholder="nome@exemplo.com" required
+                           [attr.aria-invalid]="signInForm.get('email').invalid && (signInForm.get('email').touched || signInNgForm.submitted)"
+                           aria-describedby="email-error">
+                    <span id="email-error" class="field-error" *ngIf="signInForm.get('email').invalid && (signInForm.get('email').touched || signInNgForm.submitted)">
+                        {{ (signInForm.get('email').hasError('required') ? 'signIn.emailRequired' : 'signIn.emailInvalid') | translate }}
+                    </span>
+                </div>
+                <div class="login-field">
+                    <label for="password">{{ 'signIn.password' | translate }}</label>
+                    <div class="password-field">
+                        <input id="password" [type]="showPassword ? 'text' : 'password'" formControlName="password"
+                               autocomplete="current-password" [placeholder]="'signIn.passwordPlaceholder' | translate" required
+                               [attr.aria-invalid]="signInForm.get('password').invalid && (signInForm.get('password').touched || signInNgForm.submitted)"
+                               aria-describedby="password-error">
+                        <button class="password-toggle" type="button" [disabled]="signInForm.disabled"
+                                [attr.aria-label]="(showPassword ? 'signIn.hidePassword' : 'signIn.showPassword') | translate"
+                                [attr.aria-pressed]="showPassword" (click)="showPassword = !showPassword">
+                            <mat-icon [svgIcon]="showPassword ? 'heroicons_solid:eye-off' : 'heroicons_solid:eye'" aria-hidden="true"></mat-icon>
+                        </button>
+                    </div>
+                    <span id="password-error" class="field-error" *ngIf="signInForm.get('password').invalid && (signInForm.get('password').touched || signInNgForm.submitted)">
+                        {{ 'signIn.passwordRequired' | translate }}
+                    </span>
+                </div>
+                <div class="login-options">
+                    <label><input type="checkbox" formControlName="rememberMe"> <span>{{ 'signIn.rememberMe' | translate }}</span></label>
+                    <a routerLink="/forgot-password">{{ 'signIn.forgotPassword' | translate }}</a>
+                </div>
+                <div class="login-error" *ngIf="showAlert" role="alert">{{ 'signIn.credentialsError' | translate }}</div>
+                <button class="login-submit" mat-flat-button type="submit" [disabled]="signInForm.disabled">
+                    <span *ngIf="!signInForm.disabled">{{ 'signIn.submit' | translate }}</span>
+                    <mat-icon *ngIf="!signInForm.disabled" svgIcon="heroicons_outline:arrow-right" aria-hidden="true"></mat-icon>
+                    <mat-progress-spinner *ngIf="signInForm.disabled" [diameter]="24" mode="indeterminate"
+                                          [attr.aria-label]="'signIn.signingIn' | translate"></mat-progress-spinner>
+                </button>
+            </form>
+            <p class="login-signup">
+                {{ 'signIn.noAccount' | translate }}
+                <a routerLink="/sign-up" queryParamsHandling="preserve">{{ 'signIn.createAccount' | translate }}</a>
+            </p>
+        </div>
+    </section>
+</main>
