@@ -306,6 +306,7 @@
                     class="absolute h-0 w-0 opacity-0 invisible pointer-events-none"
                     type="file"
                     multiple
+                    [disabled]="form.disabled"
                     [accept]="'image/jpeg, image/png'"
                     (change)="uploadImages(imageInput)"
                     #imageInput>
@@ -372,7 +373,7 @@
                 type="submit"
                 mat-flat-button
                 [color]="'primary'"
-                [disabled]="form.disabled">
+                [disabled]="form.disabled || pendingImageReads > 0">
                 <span *ngIf="!form.disabled">{{ 'common.save' | translate }}</span>
                 <mat-progress-spinner
                     *ngIf="form.disabled"

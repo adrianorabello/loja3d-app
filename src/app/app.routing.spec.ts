@@ -33,6 +33,17 @@ describe('appRoutes', () => {
 
     const indexOfBlock = (route: Route): number => appRoutes.indexOf(route);
 
+    it('exposes customer request pages behind account auth and admin request pages behind admin roles', () => {
+        const account = findBlock(route => route.path === 'account');
+        expect(account.canActivateChild).toContain(AuthGuard);
+        expect(account.children.find(child => child.path === 'requests').loadChildren).toBeDefined();
+        const adminRequests = adminBlock().children.find(child => child.path === 'requests');
+        expect(adminBlock().canActivateChild).toContain(RoleGuard);
+        expect(adminBlock().data.roles).toEqual(['ADMIN']);
+        expect(adminRequests.loadChildren).toBeDefined();
+        expect(adminRequests.data.printRequestsAdmin).toBeTrue();
+    });
+
     describe('signed-in-redirect', () => {
 
         it('should be guarded by SignedInRedirectGuard', () => {

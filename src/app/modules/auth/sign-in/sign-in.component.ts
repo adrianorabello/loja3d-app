@@ -7,10 +7,10 @@ import { FuseAnimations } from '@fuse/animations';
 import { FuseAlertType } from '@fuse/components/alert';
 import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
 import { AuthService } from 'app/core/auth/auth.service';
+import { environment } from 'environments/environment';
 
 /**
- * The viewport width at which the sign-in page switches from the Fuse Classic
- * presentation to Fuse Modern Reversed.
+ * The viewport width at which fullscreen sign-in adds the Fuse decorative panel.
  *
  * This is Angular Material's medium-screen threshold, and it is deliberately NOT one of
  * Fuse's own breakpoints: `tailwind.config.js` defines `sm:600 md:960 lg:1280 xl:1440`,
@@ -39,11 +39,11 @@ export class AuthSignInComponent implements OnInit, OnDestroy
     showAlert: boolean = false;
 
     /**
-     * Which presentation to render: Modern Reversed when true, Classic when false.
+     * Which presentation to render: Fullscreen Reversed or fullscreen form-only.
      *
      * Deliberately left `undefined` rather than initialised. The template reads it as
-     * `isWideViewport ? modernChrome : classicChrome`, so an environment without
-     * `matchMedia` falls back to Classic — the narrow presentation — instead of
+     * `isWideViewport ? fullscreenChrome : compactChrome`, so an environment without
+     * `matchMedia` falls back to the narrow presentation instead of
      * rendering nothing.
      */
     isWideViewport: boolean;
@@ -87,17 +87,16 @@ export class AuthSignInComponent implements OnInit, OnDestroy
     {
         // Create the form.
         //
-        // Prefilled with the ADMIN demo account. The CUSTOMER account is
-        // cliente@clararosa.pt / cliente — see `mock-api/clara-rosa/auth/data.ts`.
+        // Prefill demo credentials only when using mock authentication.
         //
         // The form is created ONCE here and lives on the component, not in the view.
         // That is what makes the responsive presentation swap non-destructive: swapping
         // the chrome destroys an embedded view, but `signInForm` and every control's
         // value, validator and disabled state survive on this instance.
         this.signInForm = this._formBuilder.group({
-            email     : ['admin@clararosa.pt', [Validators.required, Validators.email]],
-            password  : ['admin', Validators.required],
-            rememberMe: ['']
+            email     : [environment.useMockApi ? 'admin@clararosa.pt' : '', [Validators.required, Validators.email]],
+            password  : [environment.useMockApi ? 'admin' : '', Validators.required],
+            rememberMe: [false]
         });
     }
 

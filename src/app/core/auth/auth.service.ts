@@ -155,6 +155,7 @@ export class AuthService
 
         // Set the authenticated flag to false
         this._authenticated = false;
+        this._userService.user = null;
 
         // Return the observable
         return of(true);

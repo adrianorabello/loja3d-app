@@ -1,0 +1,95 @@
+<div class="chat-workspace bg-card" [class.compact]="compact" *ngIf="chat.enabled; else unavailable">
+    <aside class="conversation-list border-r" [class.mobile-hidden]="!showList">
+        <h2 class="p-4 text-xl font-bold">{{ 'chat.title' | translate }}</h2>
+        <div class="px-4 pb-4" *ngIf="chat.admin">
+            <input class="w-full p-3 rounded-lg bg-default" type="search" [value]="chat.listQuery"
+                [attr.aria-label]="'chat.search' | translate" [placeholder]="'chat.search' | translate" (input)="query($event)">
+        </div>
+        <button mat-stroked-button class="m-4" *ngIf="!chat.admin && !chat.conversations.length"
+            [disabled]="chat.loading" (click)="chat.startConversation()">{{ 'chat.start' | translate }}</button>
+        <button *ngFor="let conversation of chat.conversations" class="conversation-row w-full p-4 text-left border-b"
+            [class.bg-primary-50]="chat.selected === conversation.id"
+            [disabled]="chat.sending || chat.uploading" (click)="select(conversation.id)">
+            <span class="flex items-center justify-between font-semibold">
+                <span class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 mr-2 rounded-full bg-primary text-on-primary" aria-hidden="true">
+                    {{ chat.admin ? conversation.customerName.slice(0, 1) : 'P' }}
+                </span>
+                {{ chat.admin ? conversation.customerName : ('chat.support' | translate) }}
+                <span *ngIf="conversation.unread" class="bg-primary text-on-primary rounded-full px-2 text-sm">{{ conversation.unread }}</span>
+            </span>
+            <span class="block truncate text-secondary mt-1">{{ conversation.preview }}</span>
+        </button>
+        <button mat-button *ngIf="chat.listHasMore" (click)="chat.refreshList(true)">{{ 'chat.more' | translate }}</button>
+        <button mat-button (click)="chat.refreshList()">{{ 'chat.refresh' | translate }}</button>
+    </aside>
+    <section class="conversation flex flex-col min-w-0" [class.mobile-hidden]="showList">
+        <header class="flex items-center p-3 border-b">
+            <button mat-icon-button (click)="showList = true" class="back-button" [attr.aria-label]="'chat.back' | translate">
+                <mat-icon svgIcon="heroicons_outline:arrow-left"></mat-icon>
+            </button>
+            <div class="min-w-0">
+                <h2 class="font-semibold">{{ chat.admin && chat.selectedConversation ? chat.selectedConversation.customerName : ('chat.support' | translate) }}</h2>
+                <span class="text-sm text-secondary" role="status">{{ ('chat.' + (chat.connection | async)) | translate }}</span>
+            </div>
+        </header>
+        <fuse-alert class="m-3" *ngIf="chat.error" type="error" appearance="outline">
+            {{ chat.error | translate }}
+            <button mat-button (click)="chat.retry()">{{ 'chat.refresh' | translate }}</button>
+        </fuse-alert>
+        <div #history class="message-history flex-auto overflow-y-auto p-4" (scroll)="scrolled()" aria-live="polite">
+            <button mat-button *ngIf="chat.hasOlder" [disabled]="chat.loading" (click)="older()">{{ 'chat.older' | translate }}</button>
+            <mat-progress-bar *ngIf="chat.loading" mode="indeterminate"></mat-progress-bar>
+            <p class="text-secondary text-center p-4" *ngIf="!chat.selected">{{ 'chat.choose' | translate }}</p>
+            <ng-container *ngFor="let message of chat.messages; let i = index; trackBy: trackMessage">
+                <p class="text-center text-sm text-secondary my-4" *ngIf="i === 0 || day(message) !== day(chat.messages[i-1])">
+                    {{ message.createdAt | date:'longDate' }}
+                </p>
+                <div class="flex mb-3" [class.justify-end]="message.sender.id === chat.user?.id">
+                    <article class="message-bubble rounded-2xl p-3"
+                        [ngClass]="message.sender.id === chat.user?.id ? 'bg-primary text-on-primary' : 'bg-gray-100 dark:bg-gray-800'">
+                        <div class="text-xs font-semibold mb-1">{{ message.sender.name }}</div>
+                        <p class="whitespace-pre-wrap break-words">{{ message.text }}</p>
+                        <div *ngFor="let file of message.attachments">
+                            <app-chat-attachment [file]="file" [conversationId]="message.conversationId"></app-chat-attachment>
+                            <button mat-button class="attachment-button" (click)="chat.download(file)">
+                                <mat-icon class="icon-size-4 mr-1" svgIcon="heroicons_outline:paper-clip"></mat-icon>
+                                {{ file.name }}
+                            </button>
+                        </div>
+                        <time class="block text-right text-xs mt-1 opacity-75">{{ message.createdAt | date:'shortTime' }}</time>
+                    </article>
+                </div>
+            </ng-container>
+        </div>
+        <div class="border-t p-3" *ngIf="chat.selected">
+            <p class="text-xs text-secondary mb-2">{{ 'chat.fileHelp' | translate }}</p>
+            <div class="mb-2" *ngFor="let file of chat.draft.attachments">
+                <div class="flex items-center">
+                    <span class="min-w-0 truncate flex-auto">{{ file.name }} — {{ ('chat.' + file.status) | translate }}</span>
+                    <button mat-icon-button [disabled]="chat.sending" (click)="chat.removeAttachment(file)" [attr.aria-label]="'chat.remove' | translate">
+                        <mat-icon svgIcon="heroicons_outline:x"></mat-icon>
+                    </button>
+                </div>
+                <app-chat-attachment [file]="file" [conversationId]="chat.selected"></app-chat-attachment>
+                <p class="text-warn text-sm" *ngIf="file.error">{{ 'chat.fileRejected' | translate }}</p>
+            </div>
+            <mat-progress-bar *ngIf="chat.uploading || chat.sending" mode="indeterminate"></mat-progress-bar>
+            <div class="flex items-end">
+                <input #fileInput type="file" class="hidden" accept=".jpg,.jpeg,.png,.pdf,.stl,.3mf" (change)="fileSelected($event)">
+                <button mat-icon-button [disabled]="chat.uploading || chat.sending || chat.draft.attachments.length >= 3"
+                    (click)="fileInput.click()" [attr.aria-label]="'chat.attach' | translate">
+                    <mat-icon svgIcon="heroicons_outline:paper-clip"></mat-icon>
+                </button>
+                <textarea class="flex-auto min-w-0 rounded-lg bg-default p-3 resize-none" rows="1" fuseAutogrow
+                    [formControl]="chat.text" maxlength="5000" [attr.aria-label]="'chat.message' | translate"
+                    [placeholder]="'chat.message' | translate" (keydown)="keydown($event)"></textarea>
+                <button mat-icon-button color="primary" [disabled]="!chat.canSend"
+                    (click)="chat.send()" [attr.aria-label]="'chat.send' | translate">
+                    <mat-icon svgIcon="heroicons_outline:paper-airplane"></mat-icon>
+                </button>
+            </div>
+            <p class="text-xs text-secondary text-right">{{ (chat.text.value || '').length }}/5000</p>
+        </div>
+    </section>
+</div>
+<ng-template #unavailable><fuse-alert class="m-4" type="info">{{ 'chat.unavailable' | translate }}</fuse-alert></ng-template>

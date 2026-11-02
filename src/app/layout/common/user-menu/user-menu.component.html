@@ -1,14 +1,15 @@
 <!-- Button -->
 <button
+    *ngIf="user"
     mat-icon-button
     [matMenuTriggerFor]="userActions">
     <span class="relative">
-        <img
+        <app-user-avatar
             class="w-7 h-7 rounded-full"
-            *ngIf="showAvatar && user.avatar"
-            [src]="user.avatar">
+            *ngIf="showAvatar"
+            [user]="user"></app-user-avatar>
         <mat-icon
-            *ngIf="!showAvatar || !user.avatar"
+            *ngIf="!showAvatar"
             [svgIcon]="'heroicons_outline:user-circle'"></mat-icon>
         <span
             class="absolute right-0 bottom-0 w-2 h-2 rounded-full"
@@ -24,21 +25,25 @@
 <mat-menu
     [xPosition]="'before'"
     #userActions="matMenu">
-    <button mat-menu-item>
+    <button mat-menu-item *ngIf="user">
         <span class="flex flex-col leading-none">
             <span>Signed in as</span>
             <span class="mt-1.5 text-md font-medium">{{user.email}}</span>
         </span>
     </button>
     <mat-divider class="my-2"></mat-divider>
-    <button mat-menu-item>
+    <a *ngIf="chatEnabled" mat-menu-item [routerLink]="user?.role === 'ADMIN' ? '/admin/chat' : '/account/chat'">
+        <mat-icon svgIcon="heroicons_outline:chat-alt-2"></mat-icon>
+        <span>{{ 'chat.title' | translate }}</span>
+    </a>
+    <a mat-menu-item routerLink="/account/profile">
         <mat-icon [svgIcon]="'heroicons_outline:user-circle'"></mat-icon>
-        <span>Profile</span>
-    </button>
-    <button mat-menu-item>
+        <span>{{ 'nav.profile' | translate }}</span>
+    </a>
+    <a mat-menu-item routerLink="/account/profile">
         <mat-icon [svgIcon]="'heroicons_outline:cog'"></mat-icon>
-        <span>Settings</span>
-    </button>
+        <span>{{ 'customerAccount.title' | translate }}</span>
+    </a>
     <button
         mat-menu-item
         [matMenuTriggerFor]="userStatus">

@@ -52,6 +52,14 @@
                         "scripts": []
                     },
                     "configurations": {
+                        "chat": {
+                            "fileReplacements": [
+                                {
+                                    "replace": "src/environments/environment.ts",
+                                    "with": "src/environments/environment.chat.ts"
+                                }
+                            ]
+                        },
                         "production": {
                             "fileReplacements": [
                                 {
@@ -88,6 +96,10 @@
                         "proxyConfig": "proxy.conf.json"
                     },
                     "configurations": {
+                        "chat": {
+                            "browserTarget": "loja3d-app:build:chat",
+                            "proxyConfig": "proxy.chat.conf.json"
+                        },
                         "production": {
                             "browserTarget": "loja3d-app:build:production"
                         }

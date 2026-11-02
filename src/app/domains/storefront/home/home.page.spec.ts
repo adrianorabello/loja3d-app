@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatIconTestingModule } from '@angular/material/icon/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { RouterTestingModule } from '@angular/router/testing';
+import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
 import { CartService } from 'app/core/cart/cart.service';
@@ -111,5 +112,11 @@ describe('StorefrontHomePageComponent', () => {
         fixture.componentRef.changeDetectorRef.markForCheck();
 
         expect(productService.refresh).toHaveBeenCalledTimes(2);
+    });
+
+    it('opens the authenticated custom print request route from the home call to action', () => {
+        const navigate = spyOn(TestBed.inject(Router), 'navigateByUrl').and.returnValue(Promise.resolve(true));
+        component.requestCustomQuote();
+        expect(navigate).toHaveBeenCalledWith('/account/requests/new');
     });
 });

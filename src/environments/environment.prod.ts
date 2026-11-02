@@ -10,6 +10,7 @@ export const environment = {
     apiOrigin: '',
 
     useMockApi: false,
+    chatEnabled: false,
 
     /**
      * Base URL every Clara Rosa service builds its endpoints from, injected as

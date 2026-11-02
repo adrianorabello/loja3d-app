@@ -31,7 +31,8 @@ export interface User
     phoneCountry?: string;
     emailVerified?: boolean;
     addresses?: UserAddress[];
-    avatar?: string;
+    avatar?: string | null;
+    avatarVersion?: string | null;
     status?: string;
 
     /**
@@ -42,4 +43,13 @@ export interface User
      * are not type-checked.
      */
     role: UserRole;
+}
+
+export interface UserProfileUpdate
+{
+    name: string;
+    dateOfBirth: string | null;
+    phone: string | null;
+    phoneCountry: string | null;
+    addresses: UserAddress[];
 }

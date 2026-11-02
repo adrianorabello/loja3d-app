@@ -48,6 +48,7 @@ export class AuthInterceptor implements HttpInterceptor
                 // Catch "401 Unauthorized" responses, but skip sign-in/sign-up attempts
                 // so the user sees the validation alert rather than triggering an instant reload.
                 const isAuthEndpoint = req.url.includes('auth/sign-in') || req.url.includes('auth/sign-up');
+                const isOwnProfile = /(?:^|\/)api\/v1\/users\/me(?:[/?]|$)/.test(req.url);
 
                 if ( error instanceof HttpErrorResponse && error.status === 401 && !isAuthEndpoint )
                 {
@@ -55,7 +56,7 @@ export class AuthInterceptor implements HttpInterceptor
                     this._authService.signOut();
 
                     // Reload the app
-                    location.reload();
+                    if ( !isOwnProfile ) { location.reload(); }
                 }
 
                 return throwError(error);

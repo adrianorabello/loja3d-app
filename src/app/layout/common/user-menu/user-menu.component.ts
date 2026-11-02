@@ -5,6 +5,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { User } from 'app/core/user/user.model';
 import { UserService } from 'app/core/user/user.service';
+import { environment } from 'environments/environment';
 
 @Component({
     selector       : 'user-menu',
@@ -19,6 +20,7 @@ export class UserMenuComponent implements OnInit, OnDestroy
 
     @Input() showAvatar: boolean = true;
     user: User;
+    readonly chatEnabled = environment.chatEnabled;
 
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 

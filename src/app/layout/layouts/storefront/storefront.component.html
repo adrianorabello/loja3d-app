@@ -27,14 +27,25 @@
                     [routerLinkActiveOptions]="{exact: !!item.exactMatch}">
                     {{ item.title | translate }}
                 </a>
-                <a
-                    *ngIf="canSeeAdmin(user$ | async)"
-                    class="px-4 py-1.5 rounded-xl font-medium text-secondary hover:text-primary hover:bg-hover transition-colors"
-                    [routerLink]="'/admin/products'"
-                    [routerLinkActive]="'text-primary bg-primary-50 dark:bg-primary-900 dark:bg-opacity-20'">
+                <button mat-button class="rounded-xl font-medium text-secondary hover:text-primary hover:bg-hover" [matMenuTriggerFor]="moreMenu">
+                    {{ 'nav.more' | translate }}
+                    <mat-icon class="icon-size-4 ml-1" svgIcon="heroicons_outline:chevron-down" aria-hidden="true"></mat-icon>
+                </button>
+            </nav>
+            <mat-menu #moreMenu="matMenu">
+                <a *ngFor="let item of moreNavigation; trackBy: trackByFn" mat-menu-item [routerLink]="item.link" (click)="closeMobileMenu()">
+                    <mat-icon class="icon-size-5" [svgIcon]="item.icon"></mat-icon>
+                    {{ item.title | translate }}
+                </a>
+                <a *ngIf="user$ | async" mat-menu-item routerLink="/account/profile" (click)="closeMobileMenu()">
+                    <mat-icon class="icon-size-5" svgIcon="heroicons_outline:user-circle"></mat-icon>
+                    {{ 'nav.profile' | translate }}
+                </a>
+                <a *ngIf="canSeeAdmin(user$ | async)" mat-menu-item routerLink="/admin/products" (click)="closeMobileMenu()">
+                    <mat-icon class="icon-size-5" svgIcon="heroicons_outline:cog"></mat-icon>
                     {{ 'nav.adminArea' | translate }}
                 </a>
-            </nav>
+            </mat-menu>
 
             <!-- Search -->
             <div class="hidden lg:flex items-center ml-6 flex-auto max-w-xs">
@@ -107,16 +118,7 @@
                         mat-icon-button
                         [matMenuTriggerFor]="accountMenu"
                         [attr.aria-label]="'nav.account' | translate">
-                        <img
-                            class="w-8 h-8 rounded-full object-cover"
-                            *ngIf="user.avatar; else accountIcon"
-                            [src]="user.avatar"
-                            [alt]="user.name">
-                        <ng-template #accountIcon>
-                            <mat-icon
-                                class="icon-size-5"
-                                [svgIcon]="'heroicons_outline:user-circle'"></mat-icon>
-                        </ng-template>
+                        <app-user-avatar class="w-8 h-8" [user]="user"></app-user-avatar>
                     </button>
                     <mat-menu #accountMenu="matMenu">
                         <div class="flex flex-col px-4 py-3 leading-none">
@@ -131,6 +133,12 @@
                                 class="icon-size-5"
                                 [svgIcon]="'heroicons_outline:user-circle'"></mat-icon>
                             <span>{{ 'nav.profile' | translate }}</span>
+                        </a>
+                        <a
+                            mat-menu-item
+                            [routerLink]="'/account/requests'">
+                            <mat-icon class="icon-size-5" [svgIcon]="'heroicons_outline:cube'"></mat-icon>
+                            <span>{{ 'requests.myRequests' | translate }}</span>
                         </a>
                         <a
                             mat-menu-item
@@ -184,7 +192,8 @@
                     class="md:hidden"
                     mat-icon-button
                     (click)="toggleMobileMenu()"
-                    [attr.aria-label]="'common.search' | translate">
+                    [attr.aria-label]="'nav.menu' | translate"
+                    [attr.aria-expanded]="mobileMenuOpen">
                     <mat-icon
                         class="icon-size-5"
                         [svgIcon]="mobileMenuOpen ? 'heroicons_outline:x' : 'heroicons_outline:menu'"></mat-icon>
@@ -223,16 +232,10 @@
                         [svgIcon]="item.icon"></mat-icon>
                     {{ item.title | translate }}
                 </a>
-                <a
-                    *ngIf="canSeeAdmin(user$ | async)"
-                    class="flex items-center px-3 py-2.5 rounded-md font-medium text-primary hover:bg-hover"
-                    [routerLink]="'/admin/products'"
-                    (click)="closeMobileMenu()">
-                    <mat-icon
-                        class="icon-size-5 mr-3 text-primary"
-                        [svgIcon]="'heroicons_outline:cog'"></mat-icon>
-                    {{ 'nav.adminArea' | translate }}
-                </a>
+                <button mat-button class="text-left font-medium" [matMenuTriggerFor]="moreMenu">
+                    {{ 'nav.more' | translate }}
+                    <mat-icon class="icon-size-4 ml-1" svgIcon="heroicons_outline:chevron-down" aria-hidden="true"></mat-icon>
+                </button>
             </div>
         </div>
     </header>
@@ -276,6 +279,7 @@
 
             <div class="flex flex-col mt-8 md:mt-0 md:ml-16">
                 <span class="font-semibold">{{ 'nav.account' | translate }}</span>
+                <a class="mt-3 text-secondary hover:text-primary" routerLink="/account/requests">{{ 'requests.myRequests' | translate }}</a>
                 <a
                     class="mt-3 text-secondary hover:text-primary"
                     [routerLink]="'/account/orders'">

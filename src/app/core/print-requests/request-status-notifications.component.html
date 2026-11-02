@@ -1,0 +1,24 @@
+<div class="fixed top-20 right-4 left-4 sm:left-auto sm:w-96 z-9999 space-y-3 overflow-y-auto print:hidden"
+    style="max-height: calc(100vh - 6rem)"
+    aria-live="polite" aria-relevant="additions">
+    <fuse-alert *ngIf="pollingError" type="warning" appearance="outline" class="bg-card shadow-lg rounded-2xl">
+        {{ 'requests.notificationCheckError' | translate }}
+    </fuse-alert>
+    <fuse-alert *ngFor="let notice of notices" type="info" appearance="outline" class="bg-card shadow-lg rounded-2xl">
+        <div class="flex items-start gap-3">
+            <div class="min-w-0 flex-auto">
+                <p class="font-bold">{{ 'requests.notificationTitle' | translate }}</p>
+                <p class="mt-1 break-words">{{ notice.reference }} — {{ notice.title }}</p>
+                <p class="mt-2">{{ 'requests.notificationStatus' | translate }}:
+                    <strong>{{ ('requests.statuses.' + notice.status) | translate }}</strong>
+                </p>
+                <a mat-button class="mt-2 text-primary" [routerLink]="['/account/requests', notice.requestId]" (click)="dismiss(notice.id)">
+                    {{ 'requests.notificationOpen' | translate }}
+                </a>
+            </div>
+            <button mat-icon-button [attr.aria-label]="'common.close' | translate" (click)="dismiss(notice.id)">
+                <mat-icon svgIcon="heroicons_outline:x" aria-hidden="true"></mat-icon>
+            </button>
+        </div>
+    </fuse-alert>
+</div>

@@ -53,6 +53,14 @@ const buildAdminNavigation = (): FuseNavigationItem[] => [
         ]
     },
     {
+        id   : 'admin.requests',
+        title: 'Solicitações de impressão',
+        type : 'basic',
+        icon : 'heroicons_outline:clipboard-list',
+        link : '/admin/requests',
+        meta : {roles: ['ADMIN']}
+    },
+    {
         id   : 'admin.divider',
         type : 'divider',
         meta : {roles: ['ADMIN']}

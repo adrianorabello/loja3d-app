@@ -7,6 +7,7 @@ import { CartService } from 'app/core/cart/cart.service';
 import { ProductService } from 'app/core/product/product.service';
 import { toCartItem } from 'app/core/product/product.utils';
 import { Product } from 'app/shared/models/product.model';
+import { Router } from '@angular/router';
 
 @Component({
     selector       : 'storefront-home-page',
@@ -26,7 +27,8 @@ export class StorefrontHomePageComponent implements OnInit, OnDestroy
         private _productService: ProductService,
         private _cartService: CartService,
         private _snackBar: MatSnackBar,
-        private _translate: TranslateService
+        private _translate: TranslateService,
+        private _router: Router
     )
     {
     }
@@ -76,7 +78,7 @@ export class StorefrontHomePageComponent implements OnInit, OnDestroy
 
     requestCustomQuote(): void
     {
-        this._showMessage('home.feedback.quoteUnavailable');
+        this._router.navigateByUrl('/account/requests/new');
     }
 
     private _loadProducts(refresh: boolean = false): void

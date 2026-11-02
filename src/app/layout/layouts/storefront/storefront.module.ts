@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { SharedModule } from 'app/shared/shared.module';
 import { StorefrontLayoutComponent } from 'app/layout/layouts/storefront/storefront.component';
+import { UserAvatarModule } from 'app/shared/components/user-avatar/user-avatar.module';
 
 /**
  * Storefront layout module.
@@ -29,7 +30,8 @@ import { StorefrontLayoutComponent } from 'app/layout/layouts/storefront/storefr
         MatDividerModule,
         MatIconModule,
         MatMenuModule,
-        SharedModule
+        SharedModule,
+        UserAvatarModule
     ],
     exports     : [
         StorefrontLayoutComponent

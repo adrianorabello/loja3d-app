@@ -1,10 +1,21 @@
 <div class="flex flex-col flex-auto min-w-0">
-    <div class="py-8 px-6 md:px-8 border-b bg-card dark:bg-transparent">
-        <h1 class="text-4xl font-extrabold tracking-tight">{{ 'customerAccount.title' | translate }}</h1>
-        <p class="mt-2 text-secondary">{{ 'customerAccount.subtitle' | translate }}</p>
+    <div class="border-b bg-card dark:bg-transparent">
+        <div class="max-w-5xl w-full mx-auto py-8 px-6 md:px-8">
+            <h1 class="text-4xl font-extrabold tracking-tight">{{ 'customerAccount.title' | translate }}</h1>
+            <p class="mt-2 text-secondary">{{ 'customerAccount.subtitle' | translate }}</p>
+            <a class="mt-4" mat-stroked-button routerLink="/account/requests">{{ 'requests.myRequests' | translate }}</a>
+        </div>
     </div>
 
-    <div class="flex flex-col flex-auto max-w-5xl w-full p-6 md:p-8">
+    <div class="flex flex-col flex-auto max-w-5xl w-full mx-auto p-6 md:p-8">
+        <fuse-alert *ngIf="sessionExpired" class="mb-6" appearance="outline" type="warning">
+            {{ 'customerAccount.sessionExpired' | translate }}
+            <a mat-button routerLink="/sign-in" [queryParams]="{redirectURL: '/account/profile'}">{{ 'nav.signIn' | translate }}</a>
+        </fuse-alert>
+        <fuse-alert *ngIf="loadError" class="mb-6" appearance="outline" type="error">
+            {{ loadError | translate }}
+            <button mat-button (click)="loadProfile()" [disabled]="isLoading || sessionExpired">{{ 'customerAccount.retry' | translate }}</button>
+        </fuse-alert>
         <mat-progress-bar
             *ngIf="isLoading"
             [mode]="'indeterminate'"></mat-progress-bar>
@@ -25,7 +36,43 @@
             {{ saveSuccess | translate }}
         </fuse-alert>
 
-        <ng-container *ngIf="!isLoading && user">
+        <ng-container *ngIf="!isLoading && !loadError && user">
+            <section class="mb-8 p-6 bg-card shadow rounded-2xl" [attr.aria-busy]="isPhotoSaving || isPhotoReading">
+                <h2 class="text-2xl font-semibold">{{ 'customerAccount.photoTitle' | translate }}</h2>
+                <p class="mt-2 text-secondary">{{ 'customerAccount.photoHint' | translate }}</p>
+                <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6 mt-6">
+                    <div class="w-32 h-32 flex-none rounded-full ring-4 ring-bg-card">
+                        <img *ngIf="previewUrl; else currentPhoto" class="w-full h-full rounded-full object-cover" [src]="previewUrl"
+                            [alt]="'customerAccount.photoPreview' | translate">
+                        <ng-template #currentPhoto><app-user-avatar [user]="user"></app-user-avatar></ng-template>
+                    </div>
+                    <div class="flex-auto min-w-0">
+                        <input #photoInput type="file" accept="image/jpeg,image/png" class="hidden" (change)="selectPhoto(photoInput)">
+                        <div class="flex flex-wrap gap-2">
+                            <button mat-stroked-button type="button" (click)="photoInput.click()" [disabled]="isPhotoSaving || isSaving || sessionExpired">
+                                <mat-icon svgIcon="heroicons_outline:camera"></mat-icon>
+                                <span class="ml-2">{{ 'customerAccount.selectPhoto' | translate }}</span>
+                            </button>
+                            <button mat-button type="button" (click)="removePhoto()" [disabled]="!user.avatar || isPhotoSaving || isSaving || sessionExpired">
+                                {{ 'customerAccount.removePhoto' | translate }}
+                            </button>
+                        </div>
+                        <p *ngIf="selectedPhoto" class="mt-3 break-all">{{ selectedPhoto.name }} — {{ 'customerAccount.photoUnsaved' | translate }}</p>
+                        <div *ngIf="selectedPhoto" class="flex flex-wrap gap-2 mt-4">
+                            <button mat-flat-button color="primary" type="button" (click)="savePhoto()"
+                                [disabled]="isPhotoSaving || isPhotoReading || isSaving || sessionExpired">{{ 'customerAccount.savePhoto' | translate }}</button>
+                            <button mat-button type="button" (click)="cancelPhoto()" [disabled]="isPhotoSaving">{{ 'common.cancel' | translate }}</button>
+                        </div>
+                        <mat-progress-bar *ngIf="isPhotoSaving || isPhotoReading" class="mt-4" mode="indeterminate"></mat-progress-bar>
+                    </div>
+                </div>
+                <fuse-alert *ngIf="photoError" class="mt-4" appearance="outline" type="error">{{ photoError | translate }}</fuse-alert>
+                <fuse-alert *ngIf="photoSuccess" class="mt-4" appearance="outline" type="success">{{ photoSuccess | translate }}</fuse-alert>
+                <fuse-alert *ngIf="(avatars.state$ | async)?.error" class="mt-4" appearance="outline" type="warning">
+                    {{ 'customerAccount.photoLoadError' | translate }}
+                    <button mat-button (click)="avatars.retry()">{{ 'customerAccount.retry' | translate }}</button>
+                </fuse-alert>
+            </section>
             <div
                 class="flex flex-col p-6 bg-card shadow rounded-2xl"
                 [formGroup]="profileForm">
@@ -38,6 +85,8 @@
                         <mat-error *ngIf="profileForm.get('name').hasError('required')">
                             {{ 'validation.required' | translate }}
                         </mat-error>
+                        <mat-error *ngIf="profileForm.get('name').hasError('nameLength')">{{ 'customerAccount.nameLength' | translate }}</mat-error>
+                        <mat-error *ngIf="profileForm.get('name').hasError('server')">{{ 'customerAccount.invalidField' | translate }}</mat-error>
                     </mat-form-field>
                     <mat-form-field>
                         <mat-label>{{ 'customerAccount.email' | translate }}</mat-label>
@@ -52,15 +101,19 @@
                     </mat-form-field>
                     <mat-form-field>
                         <mat-label>{{ 'customerAccount.dateOfBirth' | translate }}</mat-label>
-                        <input matInput type="date" [formControlName]="'dateOfBirth'" [max]="today" autocomplete="bday">
+                        <input matInput type="date" [formControlName]="'dateOfBirth'" min="1900-01-01" [max]="today" autocomplete="bday">
+                        <mat-error *ngIf="profileForm.get('dateOfBirth').invalid">{{ 'customerAccount.invalidBirthDate' | translate }}</mat-error>
                     </mat-form-field>
-                    <app-phone-input [formControlName]="'phone'" [label]="'customerAccount.phone' | translate"></app-phone-input>
+                    <div class="min-w-0">
+                        <app-phone-input [formControlName]="'phone'" [label]="'customerAccount.phone' | translate"></app-phone-input>
+                        <p *ngIf="profileForm.get('phone').invalid && profileForm.get('phone').touched" class="text-warn text-sm" role="alert">{{ 'phone.invalid' | translate }}</p>
+                    </div>
                 </div>
 
             </div>
 
             <section class="flex flex-col mt-8 p-6 bg-card shadow rounded-2xl">
-                <div class="flex items-center justify-between mb-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                     <div>
                         <h2 class="text-2xl font-semibold">{{ 'customerAccount.addressesTitle' | translate }}</h2>
                         <p class="mt-1 text-secondary">{{ 'customerAccount.addressesHint' | translate }}</p>
@@ -68,6 +121,7 @@
                     <button
                         type="button"
                         mat-stroked-button
+                        [disabled]="isSaving"
                         (click)="startAddAddress()">
                         <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
                         <span class="ml-2">{{ 'customerAccount.addAddress' | translate }}</span>
@@ -92,6 +146,7 @@
                                 <button
                                     type="button"
                                     mat-icon-button
+                                    [disabled]="isSaving"
                                     [matTooltip]="'common.edit' | translate"
                                     [attr.aria-label]="('common.edit' | translate) + ' ' + address.label"
                                     (click)="editAddress(address)">
@@ -100,6 +155,7 @@
                                 <button
                                     type="button"
                                     mat-icon-button
+                                    [disabled]="isSaving"
                                     [matTooltip]="'common.delete' | translate"
                                     [attr.aria-label]="('common.delete' | translate) + ' ' + address.label"
                                     (click)="removeAddress(address)">
@@ -163,14 +219,15 @@
                     </div>
                 </form>
 
-                <div class="flex justify-end mt-6">
+                <div class="flex flex-wrap justify-end gap-3 mt-6">
+                    <button type="button" mat-button (click)="cancelProfile()" [disabled]="isSaving">{{ 'common.cancel' | translate }}</button>
                     <button
                         type="button"
                         mat-flat-button
                         [color]="'primary'"
-                        [disabled]="isSaving"
+                        [disabled]="isSaving || isPhotoSaving || sessionExpired"
                         (click)="saveProfile()">
-                        <span *ngIf="!isSaving">{{ 'customerAccount.saveAll' | translate }}</span>
+                        <span *ngIf="!isSaving">{{ 'customerAccount.saveDetails' | translate }}</span>
                         <mat-progress-spinner
                             *ngIf="isSaving"
                             [diameter]="24"

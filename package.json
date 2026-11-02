@@ -6,6 +6,7 @@
     "scripts": {
         "ng": "node scripts/ng-compat.js",
         "start": "node scripts/ng-compat.js serve --port 4201",
+        "start:chat": "node scripts/ng-compat.js serve --configuration chat --port 4203",
         "build": "node scripts/ng-compat.js build --prod",
         "build:dev": "APP_ENV=dev node scripts/set-env.js && node scripts/ng-compat.js build --prod",
         "build:prod": "APP_ENV=prod node scripts/set-env.js && node scripts/ng-compat.js build --prod",

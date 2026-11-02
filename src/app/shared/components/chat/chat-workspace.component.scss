@@ -1,0 +1,18 @@
+:host { display: flex; width: 100%; min-width: 0; height: 100%; }
+.chat-workspace { display: flex; width: 100%; min-width: 0; height: 100%; overflow: hidden; }
+.conversation-list { width: 300px; flex-shrink: 0; overflow-y: auto; }
+.conversation { flex: 1; }
+.message-history { min-height: 0; overscroll-behavior: contain; }
+.message-bubble { max-width: 85%; min-width: 80px; overflow-wrap: anywhere; }
+.attachment-button { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.back-button { display: none; }
+.compact {
+    .conversation-list, .conversation { width: 100%; }
+    .mobile-hidden { display: none; }
+    .back-button { display: inline-flex; }
+}
+@media (max-width: 959px) {
+    .conversation-list, .conversation { width: 100%; }
+    .mobile-hidden { display: none; }
+    .back-button { display: inline-flex; }
+}

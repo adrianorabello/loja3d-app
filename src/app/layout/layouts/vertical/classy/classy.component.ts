@@ -5,6 +5,9 @@ import { takeUntil } from 'rxjs/operators';
 import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
 import { FuseNavigationService } from '@fuse/components/navigation';
 import { InitialData } from 'app/app.types';
+import { Observable } from 'rxjs';
+import { User } from 'app/core/user/user.model';
+import { UserService } from 'app/core/user/user.service';
 
 @Component({
     selector     : 'classy-layout',
@@ -14,6 +17,7 @@ import { InitialData } from 'app/app.types';
 export class ClassyLayoutComponent implements OnInit, OnDestroy
 {
     data: InitialData;
+    user$: Observable<User>;
     isScreenSmall: boolean;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -24,9 +28,11 @@ export class ClassyLayoutComponent implements OnInit, OnDestroy
         private _activatedRoute: ActivatedRoute,
         private _router: Router,
         private _fuseMediaWatcherService: FuseMediaWatcherService,
-        private _fuseNavigationService: FuseNavigationService
+        private _fuseNavigationService: FuseNavigationService,
+        private _users: UserService
     )
     {
+        this.user$ = this._users.user$;
     }
 
     // -----------------------------------------------------------------------------------------------------
@@ -51,8 +57,9 @@ export class ClassyLayoutComponent implements OnInit, OnDestroy
     ngOnInit(): void
     {
         // Subscribe to the resolved route mock-api
-        this._activatedRoute.data.subscribe((data: Data) => {
+        this._activatedRoute.data.pipe(takeUntil(this._unsubscribeAll)).subscribe((data: Data) => {
             this.data = data.initialData;
+            if ( this.data.user ) { this._users.user = this.data.user; }
         });
 
         // Subscribe to media changes

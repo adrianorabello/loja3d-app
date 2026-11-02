@@ -12,7 +12,7 @@ import { isAdmin } from 'app/core/auth/role.utils';
 import { CartService } from 'app/core/cart/cart.service';
 import { I18nService } from 'app/core/i18n/i18n.service';
 import { AppLanguage, LANGUAGE_OPTIONS, LanguageOption } from 'app/core/i18n/i18n.types';
-import { storefrontNavigation } from 'app/layout/layouts/storefront/storefront.navigation';
+import { storefrontNavigation, storefrontMoreNavigation } from 'app/layout/layouts/storefront/storefront.navigation';
 
 /**
  * Public storefront shell: header, footer and the router outlet between them.
@@ -31,6 +31,7 @@ export class StorefrontLayoutComponent implements OnInit, OnDestroy
     isScreenSmall: boolean;
     mobileMenuOpen: boolean = false;
     navigation: FuseNavigationItem[] = storefrontNavigation;
+    moreNavigation: FuseNavigationItem[] = storefrontMoreNavigation;
     searchControl: FormControl = new FormControl('');
     languages: LanguageOption[] = LANGUAGE_OPTIONS;
 

@@ -37,6 +37,8 @@ export const appRoutes: Route[] = [
             layout: 'storefront'
         },
         children        : [
+            {path: 'chat', loadChildren: () => import('app/domains/chat/chat-page.module').then(m => m.ChatPageModule)},
+            {path: 'requests', loadChildren: () => import('app/domains/print-requests/print-requests.module').then(m => m.PrintRequestsModule)},
             {path: 'profile', loadChildren: () => import('app/domains/customer/profile/profile.module').then(m => m.CustomerProfileModule)}
         ]
     },
@@ -159,6 +161,8 @@ export const appRoutes: Route[] = [
             initialData: InitialDataResolver
         },
         children   : [
+            {path: 'chat', loadChildren: () => import('app/domains/chat/chat-page.module').then(m => m.ChatPageModule)},
+            {path: 'requests', data: {printRequestsAdmin: true}, loadChildren: () => import('app/domains/print-requests/print-requests.module').then(m => m.AdminPrintRequestsModule)},
             // The parent RoleGuard protects the list, create, edit, and any future
             // product-management child routes.
             {path: 'products', loadChildren: () => import('app/domains/admin/products/products.module').then(m => m.AdminProductsModule)}

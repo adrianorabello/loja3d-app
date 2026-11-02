@@ -12,7 +12,8 @@
                 <div>Already have an account?</div>
                 <a
                     class="ml-1 text-primary-500 hover:underline"
-                    [routerLink]="['/pages/authentication/sign-in']">Sign in
+                    [routerLink]="['/sign-in']"
+                    queryParamsHandling="preserve">Sign in
                 </a>
             </div>
 
@@ -30,7 +31,8 @@
             <!-- Sign Up form -->
             <form
                 class="mt-8"
-                [formGroup]="signUpForm">
+                [formGroup]="signUpForm"
+                (ngSubmit)="signUp()">
 
                 <!-- Name field -->
                 <mat-form-field class="w-full">
@@ -41,6 +43,9 @@
                         [formControlName]="'name'">
                     <mat-error *ngIf="signUpForm.get('name').hasError('required')">
                         Full name is required
+                    </mat-error>
+                    <mat-error *ngIf="signUpForm.get('name').hasError('minlength') || signUpForm.get('name').hasError('maxlength')">
+                        O nome deve ter entre 2 e 100 caracteres
                     </mat-error>
                 </mat-form-field>
 
@@ -89,6 +94,9 @@
                     <mat-error *ngIf="signUpForm.get('password').hasError('minlength')">
                         A senha deve ter pelo menos 8 caracteres
                     </mat-error>
+                    <mat-error *ngIf="signUpForm.get('password').hasError('maxlength')">
+                        A senha deve ter no máximo 256 caracteres
+                    </mat-error>
                 </mat-form-field>
 
                 <!-- Confirm password -->
@@ -131,10 +139,10 @@
                 <!-- Submit button -->
                 <button
                     class="fuse-mat-button-large w-full mt-6"
+                    type="submit"
                     mat-flat-button
                     [color]="'primary'"
-                    [disabled]="signUpForm.disabled"
-                    (click)="signUp()">
+                    [disabled]="signUpForm.disabled">
                     <span *ngIf="!signUpForm.disabled">
                         Create your free account
                     </span>

@@ -15,6 +15,7 @@ import { EmptyStateComponent } from 'app/shared/components/empty-state/empty-sta
 import { PhoneInputComponent } from 'app/shared/components/phone-input/phone-input.component';
 import { ProductCardComponent } from 'app/shared/components/product-card/product-card.component';
 import { StockBadgeComponent } from 'app/shared/components/stock-badge/stock-badge.component';
+import { UserAvatarModule } from './user-avatar/user-avatar.module';
 
 /**
  * Clara Rosa's Material-using presentational widgets.
@@ -46,7 +47,8 @@ import { StockBadgeComponent } from 'app/shared/components/stock-badge/stock-bad
         MatInputModule,
         MatSelectModule,
         MatTooltipModule,
-        SharedModule
+        SharedModule,
+        UserAvatarModule
     ],
     exports     : [
         CartPanelComponent,
@@ -54,7 +56,8 @@ import { StockBadgeComponent } from 'app/shared/components/stock-badge/stock-bad
         EmptyStateComponent,
         PhoneInputComponent,
         ProductCardComponent,
-        StockBadgeComponent
+        StockBadgeComponent,
+        UserAvatarModule
     ]
 })
 export class SharedComponentsModule

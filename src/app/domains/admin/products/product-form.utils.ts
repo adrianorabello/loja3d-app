@@ -14,8 +14,7 @@ import { Product } from 'app/shared/models/product.model';
 export const ALLOWED_IMAGE_TYPES: string[] = ['image/jpeg', 'image/png'];
 
 /**
- * Per-file size cap, in bytes. Images are stored as base64 in the (mock) record, so this
- * also bounds how large a single product can grow.
+ * Per-file upload size cap, matching the real API's product image validation.
  */
 export const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
 

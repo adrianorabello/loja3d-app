@@ -1,5 +1,5 @@
 <!--
-    Responsive sign-in: Fuse Classic below 768px, Fuse Modern Reversed at 768px and above.
+    Fullscreen sign-in: form-only below 768px, Fuse Fullscreen Reversed at 768px and above.
 
     Exactly ONE chrome is instantiated at a time. That is a correctness requirement, not an
     optimisation: rendering both and hiding one with CSS would put two `id="email"`, two
@@ -8,14 +8,12 @@
     controls.
 
     The form itself lives in `#formContent` and therefore exists exactly once in this file — the
-    two chromes are pure wrappers. Fuse's own Classic and Modern Reversed templates are
-    byte-identical from the logo through the end of the form, so the wrapper is the only real
-    difference between the two presentations.
+    two chromes are pure wrappers around the same authentication controls.
 
     Swapping the chrome destroys an embedded view, never the component, so `signInForm` and every
     control's value, validator and disabled state survive the swap. See the class for the details.
 -->
-<ng-container *ngTemplateOutlet="isWideViewport ? modernChrome : classicChrome"></ng-container>
+<ng-container *ngTemplateOutlet="isWideViewport ? fullscreenChrome : compactChrome"></ng-container>
 
 
 <!-- ============================================================================================ -->
@@ -34,7 +32,8 @@
         <div>Don't have an account?</div>
         <a
             class="ml-1 text-primary-500 hover:underline"
-            [routerLink]="['/sign-up']">Sign up
+            [routerLink]="['/sign-up']"
+            queryParamsHandling="preserve">Sign up
         </a>
     </div>
 
@@ -175,18 +174,13 @@
 
 
 <!-- ============================================================================================ -->
-<!-- @ Classic chrome — rendered below 768px                                                      -->
+<!-- @ Fullscreen form-only chrome — rendered below 768px                                         -->
 <!-- ============================================================================================ -->
-<!--
-    Taken from Fuse's `sign-in/classic` variant verbatim. The `sm:` prefixes (Fuse's sm is 600px)
-    are KEPT: they refine phone to small-tablet entirely inside the sub-768 range, which is exactly
-    this chrome's domain.
--->
-<ng-template #classicChrome>
+<ng-template #compactChrome>
 
-    <div class="flex flex-col flex-auto items-center sm:justify-center min-w-0" data-chrome="classic">
-        <div class="w-full sm:w-auto py-8 px-4 sm:p-12 sm:rounded-2xl sm:shadow sm:bg-card">
-            <div class="w-full max-w-80 sm:w-80 mx-auto sm:mx-0">
+    <div class="flex flex-col flex-auto items-center justify-center w-full min-h-screen min-w-0 bg-card" data-chrome="fullscreen-compact">
+        <div class="w-full py-8 px-4 sm:p-12">
+            <div class="w-full max-w-80 mx-auto">
                 <ng-container *ngTemplateOutlet="formContent"></ng-container>
             </div>
         </div>
@@ -196,29 +190,18 @@
 
 
 <!-- ============================================================================================ -->
-<!-- @ Modern Reversed chrome — rendered at 768px and above                                        -->
+<!-- @ Fuse Fullscreen Reversed chrome — rendered at 768px and above                               -->
 <!-- ============================================================================================ -->
 <!--
-    Taken from Fuse's `sign-in/modern-reversed` variant, with its responsive prefixes REWRITTEN.
-    This is the important detail of the whole feature.
-
-    Upstream, the decorative panel is `hidden md:flex` — and Fuse's `md` is 960px, not 768px. Left
-    as-is, the panel would stay hidden from 768 to 959, which is precisely the band where Modern
-    Reversed is supposed to become the new presentation; the feature would look broken there.
-
-    Since this chrome only ever renders at >= 768px, the `md:`/`sm:` prefixes are redundant as well
-    as wrong, so they are dropped and `isWideViewport` becomes the single thing that decides
-    presentation. Padding and type scale are then stepped up at `lg:` (1280px) instead, because
-    upstream's flat `p-16` and `text-7xl` are built for a wide viewport and would crowd the panel
-    at 768.
+    Fuse's md breakpoint is 960px. The existing 768px media watcher controls this
+    wrapper instead, preserving form state when the viewport changes.
 -->
-<ng-template #modernChrome>
+<ng-template #fullscreenChrome>
 
-    <div class="flex flex-col flex-auto items-center justify-center min-w-0 p-4 lg:p-8" data-chrome="modern">
-        <div class="flex w-full max-w-6xl rounded-2xl shadow overflow-hidden bg-card">
+    <div class="flex flex-row flex-auto items-stretch w-full min-h-screen min-w-0 bg-card" data-chrome="fullscreen">
 
             <!-- Decorative panel. Leads in the DOM, hence "reversed". -->
-            <div class="relative flex flex-auto items-center justify-center h-full p-8 lg:p-16 xl:px-28 overflow-hidden bg-gray-800 dark:border-r">
+            <div class="relative flex flex-auto min-w-0 items-center justify-center p-8 lg:p-16 xl:px-28 overflow-hidden bg-gray-800 dark:border-r">
                 <!-- Background - @formatter:off -->
                 <!-- Rings -->
                 <svg class="absolute inset-0 pointer-events-none" aria-hidden="true"
@@ -274,10 +257,9 @@
             </div>
 
             <!-- Form column -->
-            <div class="flex-0 w-auto p-8 lg:p-16">
+            <div class="flex flex-0 items-center w-auto p-8 lg:p-16">
                 <div class="w-full max-w-80 sm:w-80 mx-auto sm:mx-0">
                     <ng-container *ngTemplateOutlet="formContent"></ng-container>
-                </div>
             </div>
 
         </div>

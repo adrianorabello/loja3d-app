@@ -1,6 +1,6 @@
-import { Component, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
-import { FormBuilder, FormGroup, NgForm, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FuseValidators } from '@fuse/validators';
 import { FuseAnimations } from '@fuse/animations';
 import { FuseAlertType } from '@fuse/components/alert';
@@ -14,8 +14,6 @@ import { AuthService } from 'app/core/auth/auth.service';
 })
 export class AuthSignUpComponent implements OnInit
 {
-    @ViewChild('signUpNgForm') signUpNgForm: NgForm;
-
     alert: { type: FuseAlertType, message: string } = {
         type   : 'success',
         message: ''
@@ -29,6 +27,7 @@ export class AuthSignUpComponent implements OnInit
     constructor(
         private _authService: AuthService,
         private _formBuilder: FormBuilder,
+        private _activatedRoute: ActivatedRoute,
         private _router: Router
     )
     {
@@ -48,9 +47,9 @@ export class AuthSignUpComponent implements OnInit
         // The `company` field Fuse collected has been dropped — it has no meaning for a
         // consumer storefront, and `SignUpPayload` no longer carries it.
         this.signUpForm = this._formBuilder.group({
-                name      : ['', Validators.required],
+                name      : ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
                 email     : ['', [Validators.required, Validators.email]],
-                password  : ['', [Validators.required, Validators.minLength(8)]],
+                password  : ['', [Validators.required, Validators.minLength(8), Validators.maxLength(256)]],
                 passwordConfirm: ['', Validators.required],
                 phone     : [null],
                 agreements: ['', Validators.requiredTrue]
@@ -71,8 +70,9 @@ export class AuthSignUpComponent implements OnInit
     signUp(): void
     {
         // Do nothing if the form is invalid
-        if ( this.signUpForm.invalid )
+        if ( this.signUpForm.disabled || this.signUpForm.invalid )
         {
+            this.signUpForm.markAllAsTouched();
             return;
         }
 
@@ -92,18 +92,13 @@ export class AuthSignUpComponent implements OnInit
             .subscribe(
                 () => {
 
-                    // Sign-up now establishes a session, so send the new customer to the
-                    // role-aware redirect rather than to the confirmation-required page
-                    // (which was a dead end: the old mock returned no token).
-                    this._router.navigateByUrl('/signed-in-redirect');
+                    const redirectURL = this._activatedRoute.snapshot.queryParamMap.get('redirectURL') || '/signed-in-redirect';
+                    this._router.navigateByUrl(redirectURL);
                 },
                 (response) => {
 
                     // Re-enable the form
                     this.signUpForm.enable();
-
-                    // Reset the form
-                    this.signUpNgForm.resetForm();
 
                     // Set the alert
                     this.alert = {

@@ -1,0 +1,151 @@
+<section class="w-full max-w-6xl mx-auto p-4 sm:p-8">
+    <div class="flex flex-wrap justify-between gap-3 mb-4">
+        <a mat-button [routerLink]="basePath">{{ 'common.back' | translate }}</a>
+        <button mat-stroked-button [disabled]="loading || saving" (click)="load()">{{ 'requests.refresh' | translate }}</button>
+    </div>
+    <mat-progress-bar *ngIf="loading" mode="indeterminate" [attr.aria-label]="'common.loading' | translate"></mat-progress-bar>
+    <fuse-alert *ngIf="error" type="error" appearance="outline" class="mb-4">{{ error | translate }}</fuse-alert>
+    <fuse-alert *ngIf="success" type="success" appearance="outline" class="mb-4" role="status">{{ success | translate }}</fuse-alert>
+    <ng-container *ngIf="request">
+        <header class="mb-6">
+            <span class="font-semibold text-primary">{{ request.reference }}</span>
+            <h1 class="text-3xl font-extrabold mt-2">{{ request.title }}</h1>
+            <p *ngIf="admin" class="text-secondary">{{ request.customerName }} — {{ request.customerEmail }}</p>
+            <p class="text-secondary">{{ 'requests.created' | translate }}: {{ request.createdAt | date:'medium' }}</p>
+        </header>
+        <div class="bg-card border rounded-3xl shadow-sm p-4 sm:p-6 mb-6">
+            <print-request-workflow [status]="request.status"></print-request-workflow>
+            <div class="mt-6">
+            <h2 class="text-xl font-bold">{{ ('requests.statuses.' + request.status) | translate }}</h2>
+            <p class="mt-2">{{ ('requests.next.' + request.status) | translate }}</p>
+            <p class="text-secondary text-sm mt-2">{{ 'requests.updated' | translate }}: {{ request.updatedAt | date:'medium' }}</p>
+            <p *ngIf="request.estimatedShipping" class="mt-2">{{ 'requests.estimatedShipping' | translate }}: {{ request.estimatedShipping | date:'mediumDate' }}</p>
+            <a *ngIf="request.trackingUrl" class="inline-block text-primary underline mt-3" [href]="request.trackingUrl" target="_blank" rel="noopener noreferrer">
+                {{ 'requests.trackShipment' | translate }}
+            </a>
+            </div>
+        </div>
+        <div class="grid lg:grid-cols-2 gap-6">
+            <article class="bg-card rounded-2xl shadow p-6">
+                <h2 class="text-xl font-bold mb-4">{{ 'requests.details' | translate }}</h2>
+                <p class="whitespace-pre-wrap break-words">{{ request.description }}</p>
+                <dl class="grid grid-cols-2 gap-3 mt-4">
+                    <dt class="text-secondary">{{ 'requests.quantity' | translate }}</dt><dd>{{ request.quantity }}</dd>
+                    <dt class="text-secondary">{{ 'requests.dimensions' | translate }}</dt><dd class="break-words">{{ request.dimensions }}</dd>
+                    <dt class="text-secondary">{{ 'requests.material' | translate }}</dt><dd>{{ request.material || '—' }}</dd>
+                    <dt class="text-secondary">{{ 'requests.color' | translate }}</dt><dd>{{ request.color || '—' }}</dd>
+                </dl>
+                <h3 class="font-semibold mt-6 mb-2">{{ 'requests.links' | translate }}</h3>
+                <p *ngIf="!request.referenceLinks.length" class="text-secondary">{{ 'requests.noLinks' | translate }}</p>
+                <ul class="space-y-2">
+                    <li *ngFor="let link of request.referenceLinks">
+                        <a [href]="link" target="_blank" rel="noopener noreferrer" class="text-primary underline break-all">{{ link }}</a>
+                    </li>
+                </ul>
+                <p *ngIf="request.referenceLinks.length" class="text-secondary text-sm mt-3">{{ 'requests.externalLinks' | translate }}</p>
+            </article>
+            <article class="bg-card rounded-2xl shadow p-6">
+                <h2 class="text-xl font-bold mb-4">{{ 'requests.quotation' | translate }}</h2>
+                <p *ngIf="!latestQuote" class="text-secondary">{{ 'requests.noQuote' | translate }}</p>
+                <div *ngIf="latestQuote as quote">
+                    <p class="text-2xl font-bold">{{ quote.amountCents / 100 | appCurrency }}</p>
+                    <p class="whitespace-pre-wrap break-words mt-3">{{ quote.scope }}</p>
+                    <p class="mt-3">{{ 'requests.leadDays' | translate }}: {{ quote.leadDays }}</p>
+                    <p>{{ 'requests.validUntil' | translate }}: {{ quote.validUntil | date:'medium' }}</p>
+                    <p>{{ 'requests.quoteVersion' | translate }}: {{ quote.version }}</p>
+                    <p *ngIf="quote.approvedAt" class="font-semibold mt-2">{{ 'requests.approved' | translate }}: {{ quote.approvedAt | date:'medium' }}</p>
+                </div>
+                <p class="mt-4 text-secondary">{{ 'requests.manualPayment' | translate }}</p>
+                <div class="flex flex-wrap gap-3 mt-4" *ngIf="!admin">
+                    <button *ngIf="can('approve_quote')" mat-flat-button color="primary" [disabled]="saving || loading" (click)="customerAction('approve_quote')">{{ 'requests.actions.approve_quote' | translate }}</button>
+                    <button *ngIf="can('request_changes')" mat-stroked-button [disabled]="saving || loading" (click)="customerAction('request_changes')">{{ 'requests.actions.request_changes' | translate }}</button>
+                    <button *ngIf="can('cancel')" mat-stroked-button color="warn" [disabled]="saving || loading" (click)="customerAction('cancel')">{{ 'requests.actions.cancel' | translate }}</button>
+                </div>
+                <details *ngIf="request.quotes.length > 1" class="mt-4">
+                    <summary class="cursor-pointer font-semibold">{{ 'requests.previousQuotes' | translate }}</summary>
+                    <div *ngFor="let previous of request.quotes" class="border-t py-3">
+                        <p>{{ 'requests.quoteVersion' | translate }} {{ previous.version }} — {{ previous.amountCents / 100 | appCurrency }}</p>
+                        <p class="whitespace-pre-wrap">{{ previous.scope }}</p>
+                        <p>{{ 'requests.validUntil' | translate }}: {{ previous.validUntil | date:'medium' }}</p>
+                    </div>
+                </details>
+            </article>
+        </div>
+        <div *ngIf="admin" class="grid lg:grid-cols-2 gap-6 mt-6">
+            <form *ngIf="canQuote" [formGroup]="quoteForm" (ngSubmit)="publishQuote()" class="bg-card rounded-2xl shadow p-6">
+                <h2 class="text-xl font-bold mb-4">{{ 'requests.publishQuote' | translate }}</h2>
+                <fieldset [disabled]="saving || loading">
+                    <mat-form-field class="w-full">
+                        <mat-label>{{ 'requests.amount' | translate }} (EUR)</mat-label>
+                        <input matInput type="number" formControlName="amount" min="0.01" max="1000000" step="0.01" required>
+                        <mat-error>{{ 'requests.invalid' | translate }}</mat-error>
+                    </mat-form-field>
+                    <mat-form-field class="w-full">
+                        <mat-label>{{ 'requests.scope' | translate }}</mat-label>
+                        <textarea matInput formControlName="scope" rows="3" maxlength="5000" required></textarea>
+                        <mat-error>{{ 'requests.invalid' | translate }}</mat-error>
+                    </mat-form-field>
+                    <mat-form-field class="w-full">
+                        <mat-label>{{ 'requests.leadDays' | translate }}</mat-label>
+                        <input matInput type="number" formControlName="leadDays" min="1" max="365" step="1" required>
+                        <mat-error>{{ 'requests.invalid' | translate }}</mat-error>
+                    </mat-form-field>
+                    <mat-form-field class="w-full">
+                        <mat-label>{{ 'requests.validUntil' | translate }}</mat-label>
+                        <input matInput type="datetime-local" formControlName="validUntil" required>
+                        <mat-error>{{ 'requests.invalid' | translate }}</mat-error>
+                    </mat-form-field>
+                    <button mat-flat-button color="primary" type="submit" [disabled]="saving || loading">{{ 'requests.publishQuote' | translate }}</button>
+                </fieldset>
+            </form>
+            <form *ngIf="request.allowedTransitions.length" [formGroup]="transitionForm" #transitionFormDirective="ngForm" (ngSubmit)="transition()" class="bg-card rounded-2xl shadow p-6">
+                <h2 class="text-xl font-bold mb-4">{{ 'requests.updateStatus' | translate }}</h2>
+                <fieldset [disabled]="saving || loading">
+                    <mat-form-field class="w-full">
+                        <mat-label>{{ 'requests.status' | translate }}</mat-label>
+                        <mat-select formControlName="status" required>
+                            <mat-option *ngFor="let status of request.allowedTransitions" [value]="status">{{ ('requests.statuses.' + status) | translate }}</mat-option>
+                        </mat-select>
+                        <mat-error>{{ 'requests.invalid' | translate }}</mat-error>
+                    </mat-form-field>
+                    <mat-form-field class="w-full">
+                        <mat-label>{{ 'requests.reason' | translate }}</mat-label>
+                        <textarea matInput formControlName="message" rows="3" maxlength="5000" required></textarea>
+                        <mat-error>{{ 'requests.reasonRequired' | translate }}</mat-error>
+                    </mat-form-field>
+                    <p *ngIf="transitionForm.value.status === 'payment_confirmed'" class="text-secondary mb-4">{{ 'requests.paymentWarning' | translate }}</p>
+                    <mat-form-field *ngIf="transitionForm.value.status === 'shipped'" class="w-full">
+                        <mat-label>{{ 'requests.trackingUrl' | translate }}</mat-label>
+                        <input matInput type="url" formControlName="trackingUrl" maxlength="2048">
+                        <mat-error>{{ 'requests.trackingRequired' | translate }}</mat-error>
+                    </mat-form-field>
+                    <mat-form-field class="w-full">
+                        <mat-label>{{ 'requests.estimatedShipping' | translate }}</mat-label>
+                        <input matInput type="date" formControlName="estimatedShipping">
+                    </mat-form-field>
+                    <button mat-flat-button color="primary" type="submit" [disabled]="saving || loading">{{ 'requests.updateStatus' | translate }}</button>
+                </fieldset>
+            </form>
+        </div>
+        <form *ngIf="!terminal" [formGroup]="messageForm" #messageFormDirective="ngForm" (ngSubmit)="sendMessage()" class="bg-card rounded-2xl shadow p-6 mt-6">
+            <h2 class="text-xl font-bold mb-4">{{ 'requests.conversation' | translate }}</h2>
+            <mat-form-field class="w-full">
+                <mat-label>{{ 'requests.message' | translate }}</mat-label>
+                <textarea matInput rows="3" formControlName="message" maxlength="5000" required></textarea>
+                <mat-hint>{{ 'requests.messageHint' | translate }}</mat-hint>
+                <mat-error>{{ 'requests.reasonRequired' | translate }}</mat-error>
+            </mat-form-field>
+            <button mat-stroked-button type="submit" [disabled]="saving || loading" class="mt-3">{{ 'requests.send' | translate }}</button>
+        </form>
+        <article class="bg-card rounded-2xl shadow p-6 mt-6">
+            <h2 class="text-xl font-bold mb-4">{{ 'requests.history' | translate }}</h2>
+            <ol class="divide-y">
+                <li *ngFor="let event of request.history" class="py-4">
+                    <p class="font-semibold">{{ event.actorName }} — {{ ('requests.statuses.' + event.status) | translate }}</p>
+                    <time class="text-sm text-secondary">{{ event.createdAt | date:'medium' }}</time>
+                    <p class="whitespace-pre-wrap break-words mt-2">{{ event.message }}</p>
+                </li>
+            </ol>
+        </article>
+    </ng-container>
+</section>

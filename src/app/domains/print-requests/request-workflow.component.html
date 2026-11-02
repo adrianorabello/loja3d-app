@@ -1,0 +1,59 @@
+<h2 class="text-sm font-semibold text-secondary mb-6">{{ label | translate }}</h2>
+<ol class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-y-6" [attr.aria-label]="label | translate">
+    <li *ngFor="let stage of stages; let index = index; let last = last" class="workflow-stage relative min-w-0 text-center px-2"
+        [class.workflow-completed]="isComplete(index)" [class.workflow-current]="isCurrent(index)"
+        data-workflow-stage [attr.aria-current]="status && isCurrent(index) ? 'step' : null">
+        <div *ngIf="!last" class="workflow-connector hidden md:block" aria-hidden="true"></div>
+        <div class="workflow-art">
+            <span *ngIf="status && isCurrent(index)" class="workflow-current-label">{{ 'requests.current' | translate }}</span>
+            <svg *ngIf="isCurrent(index)" class="workflow-current-border"
+                viewBox="0 0 108 84" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+                <rect x="1" y="1" width="106" height="82" rx="19" pathLength="100"></rect>
+            </svg>
+            <svg class="workflow-illustration" [attr.data-illustration]="stage" viewBox="0 0 96 72" aria-hidden="true" focusable="false" [ngSwitch]="stage">
+                <g *ngSwitchCase="'request'">
+                    <path class="workflow-paper" d="M26 10h34l12 12v40H26z"></path>
+                    <path d="M60 10v13h12M35 49l12-19 13 19z"></path>
+                    <circle cx="47" cy="28" r="3"></circle>
+                    <path class="workflow-accent" d="M35 55h27"></path>
+                </g>
+                <g *ngSwitchCase="'quote'">
+                    <rect class="workflow-paper" height="51" rx="6" width="39" x="29" y="12"></rect>
+                    <path d="M38 12V8h21v4M38 25h21"></path>
+                    <rect class="workflow-accent" height="7" rx="2" width="20" x="38" y="31"></rect>
+                    <path d="M38 46h4m7 0h4m7 0h1M38 54h4m7 0h4m7 0h1"></path>
+                </g>
+                <g *ngSwitchCase="'payment'">
+                    <path class="workflow-paper" d="M19 24h58v37H19z"></path>
+                    <path d="M19 34h58M25 19h45a7 7 0 0 1 7 7"></path>
+                    <path class="workflow-accent" d="M58 47h11"></path>
+                    <circle cx="31" cy="49" r="5"></circle>
+                </g>
+                <g *ngSwitchCase="'production'">
+                    <path class="workflow-paper" d="M20 10h56v52H20zM27 17h42v31H27z"></path>
+                    <path d="M37 17v9h22v-9M48 26v8"></path>
+                    <path class="workflow-accent" d="M37 52h22M39 47h18M41 42h14"></path>
+                    <path d="M27 56h42"></path>
+                </g>
+                <g *ngSwitchCase="'shipping'">
+                    <path class="workflow-paper" d="M12 25h38v29H12zM50 34h17l12 12v8H50z"></path>
+                    <path d="M18 25l13-8 13 8M31 17v23M12 39h38"></path>
+                    <circle cx="27" cy="57" r="6"></circle>
+                    <circle cx="67" cy="57" r="6"></circle>
+                    <path class="workflow-accent" d="M58 39h8l6 7H58z"></path>
+                </g>
+                <g *ngSwitchCase="'delivery'">
+                    <path class="workflow-paper" d="M19 23l29-13 29 13v37H19z"></path>
+                    <path d="M19 23l29 14 29-14M48 37v23"></path>
+                    <circle class="workflow-accent-fill" cx="68" cy="51" r="13"></circle>
+                    <path class="workflow-check-path" d="m61 51 5 5 9-11"></path>
+                </g>
+            </svg>
+            <span *ngIf="isComplete(index)" class="workflow-complete" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false"><path d="m5 12 4 4L19 6"></path></svg>
+            </span>
+        </div>
+        <p class="font-bold mt-3">{{ ('requests.stages.' + stage) | translate }}</p>
+        <p class="text-xs mt-1 text-secondary">{{ stageLabel(index) | translate }}</p>
+    </li>
+</ol>

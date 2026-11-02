@@ -1,5 +1,5 @@
-<div class="flex gap-2">
-    <mat-form-field class="w-40 flex-none">
+<div class="flex flex-wrap sm:flex-nowrap gap-2 min-w-0">
+    <mat-form-field class="w-full sm:w-40 flex-none">
         <mat-label>{{ 'phone.country' | translate }}</mat-label>
         <mat-select
             [value]="country"
@@ -22,7 +22,7 @@
             </mat-option>
         </mat-select>
     </mat-form-field>
-    <mat-form-field class="flex-auto">
+    <mat-form-field class="w-full sm:w-auto flex-auto min-w-0">
         <mat-label>{{ label || ('phone.number' | translate) }}</mat-label>
         <input
             matInput

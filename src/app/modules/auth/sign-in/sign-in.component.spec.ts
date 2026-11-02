@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpTestingController, HttpClientTestingModule } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { MatIconTestingModule } from '@angular/material/icon/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { BreakpointState } from '@angular/cdk/layout';
@@ -9,6 +10,7 @@ import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
 import { AuthService } from 'app/core/auth/auth.service';
 import { AuthSignInModule } from 'app/modules/auth/sign-in/sign-in.module';
 import { AUTH_WIDE_LAYOUT_QUERY, AuthSignInComponent } from 'app/modules/auth/sign-in/sign-in.component';
+import { environment } from 'environments/environment';
 
 /**
  * Coverage for the responsive sign-in presentation.
@@ -103,7 +105,8 @@ describe('AuthSignInComponent (responsive presentation)', () => {
                 AuthSignInModule,
                 RouterTestingModule,
                 HttpClientTestingModule,
-                NoopAnimationsModule
+                NoopAnimationsModule,
+                MatIconTestingModule
             ],
             providers: [
                 AuthService,
@@ -130,17 +133,33 @@ describe('AuthSignInComponent (responsive presentation)', () => {
         expect(AUTH_WIDE_LAYOUT_QUERY).toBe('(min-width: 768px)');
     });
 
-    it('renders Classic below 768px, without the decorative panel', () => {
-        setViewport(false);
-
-        expect(chrome()).toBe('classic');
-        expect(decorativePanel()).toBeNull();
+    it('uses real authentication by default without prefilling demo admin credentials', () => {
+        expect(environment.useMockApi).toBeFalse();
+        expect(emailInput().value).toBe('');
+        expect(passwordInput().value).toBe('');
+        expect(component.signInForm.value.rememberMe).toBeFalse();
     });
 
-    it('renders Modern Reversed at 768px and above, with the decorative panel visible', () => {
+    it('renders fullscreen form-only below 768px, without a floating card', () => {
+        setViewport(false);
+
+        expect(chrome()).toBe('fullscreen-compact');
+        expect(decorativePanel()).toBeNull();
+        const wrapper: HTMLElement = fixture.nativeElement.querySelector('[data-chrome]');
+        expect(wrapper.classList.contains('min-h-screen')).toBeTrue();
+        expect(wrapper.classList.contains('w-full')).toBeTrue();
+        expect(fixture.nativeElement.querySelector('[class*="rounded-2xl"], [class*="shadow"]')).toBeNull();
+    });
+
+    it('renders Fullscreen Reversed at 768px and above, without card margins or maximum width', () => {
         setViewport(true);
 
-        expect(chrome()).toBe('modern');
+        expect(chrome()).toBe('fullscreen');
+        const wrapper: HTMLElement = fixture.nativeElement.querySelector('[data-chrome]');
+        expect(wrapper.classList.contains('min-h-screen')).toBeTrue();
+        expect(wrapper.classList.contains('w-full')).toBeTrue();
+        expect(wrapper.classList.contains('items-stretch')).toBeTrue();
+        expect(fixture.nativeElement.querySelector('.max-w-6xl, [class*="rounded-2xl"], [class*="shadow"]')).toBeNull();
 
         // The panel must actually be in the DOM, not merely present-but-hidden. Upstream Fuse
         // gates it on `md:` (960px), which would leave it hidden across 768-959 — the exact
@@ -148,13 +167,13 @@ describe('AuthSignInComponent (responsive presentation)', () => {
         expect(decorativePanel()).not.toBeNull();
     });
 
-    it('resolves to Classic when the media state is unknown', () => {
+    it('resolves to fullscreen form-only when the media state is unknown', () => {
         // `isWideViewport` is intentionally left undefined, so a no-matchMedia environment
         // falls back to the narrow presentation rather than rendering nothing.
         component.isWideViewport = undefined;
         fixture.detectChanges();
 
-        expect(chrome()).toBe('classic');
+        expect(chrome()).toBe('fullscreen-compact');
     });
 
     // -----------------------------------------------------------------------------------------
@@ -220,7 +239,9 @@ describe('AuthSignInComponent (responsive presentation)', () => {
         submitButton().click();
         fixture.detectChanges();
 
-        expect(httpMock.match(SIGN_IN_URL).length).toBe(1);
+        const requests = httpMock.match(SIGN_IN_URL);
+        expect(requests.length).toBe(1);
+        expect(requests[0].request.body.rememberMe).toBeFalse();
         expect(component.signInForm.disabled).toBe(true);
         expect(submitButton().disabled).toBe(true);
     });
@@ -283,7 +304,7 @@ describe('AuthSignInComponent (responsive presentation)', () => {
         expect(component.signInForm.untouched).toBe(true);
     });
 
-    it('clears the form on failure in the Modern Reversed chrome too', () => {
+    it('clears the form on failure in the Fullscreen Reversed chrome too', () => {
         // The error path must not depend on which chrome happens to be mounted.
         setViewport(true);
         typeCredentials('admin@clararosa.pt', 'wrong');

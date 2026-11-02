@@ -1,4 +1,5 @@
 import { FuseNavigationItem } from '@fuse/components/navigation';
+import { environment } from 'environments/environment';
 
 /**
  * Public storefront navigation.
@@ -32,5 +33,20 @@ export const storefrontNavigation: FuseNavigationItem[] = [
         type : 'basic',
         icon : 'heroicons_outline:cube',
         link : '/products'
+    }
+];
+
+export const storefrontMoreNavigation: FuseNavigationItem[] = [
+    ...(environment.chatEnabled ? [{
+        id: 'support-chat', title: 'chat.title', type: 'basic' as const,
+        icon: 'heroicons_outline:chat-alt-2', link: '/account/chat'
+    }] : []),
+    {
+        id: 'custom-print', title: 'requests.new', type: 'basic',
+        icon: 'heroicons_outline:cube', link: '/account/requests/new'
+    },
+    {
+        id: 'my-print-requests', title: 'requests.myRequests', type: 'basic',
+        icon: 'heroicons_outline:clipboard-list', link: '/account/requests'
     }
 ];

@@ -13,6 +13,8 @@ import { LayoutModule } from 'app/layout/layout.module';
 import { AppComponent } from 'app/app.component';
 import { appRoutes } from 'app/app.routing';
 import { environment } from 'environments/environment';
+import { RequestStatusNotificationsModule } from 'app/core/print-requests/request-status-notifications.module';
+import { ChatModule } from 'app/shared/components/chat/chat.module';
 
 const routerConfig: ExtraOptions = {
     scrollPositionRestoration: 'enabled',
@@ -46,6 +48,8 @@ const routerConfig: ExtraOptions = {
 
         // Core
         CoreModule,
+        RequestStatusNotificationsModule,
+        ChatModule,
 
         // Layout
         LayoutModule,

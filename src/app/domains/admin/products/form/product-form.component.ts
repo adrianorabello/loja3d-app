@@ -27,9 +27,8 @@ interface ImageError
  * `product`. Validation follows the sign-up form: a `mat-error` per rule, and an invalid
  * submit marks everything touched and returns before any HTTP call.
  *
- * Images are kept outside the `FormGroup` as data URLs (or the seed data's asset paths).
- * They go to the mock API's in-memory store only. The cart drops `images` when it builds a
- * line, so no base64 ever reaches localStorage.
+ * New images use data URLs for preview and transport. The real API persists binary BSON
+ * and returns image endpoints; existing image URLs and asset paths remain unchanged.
  */
 @Component({
     selector     : 'admin-product-form',
@@ -50,6 +49,7 @@ export class ProductFormComponent implements OnInit, OnDestroy
 
     submitted: boolean = false;
     saveError: string;
+    pendingImageReads = 0;
 
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -185,6 +185,7 @@ export class ProductFormComponent implements OnInit, OnDestroy
      */
     uploadImages(input: HTMLInputElement): void
     {
+        if ( this.form.disabled ) { return; }
         this.imageErrors = [];
 
         Array.from(input.files ?? []).forEach((file) => {
@@ -198,8 +199,10 @@ export class ProductFormComponent implements OnInit, OnDestroy
             }
 
             const reader = new FileReader();
+            this.pendingImageReads++;
 
             reader.onload = () => {
+                this.pendingImageReads--;
                 if ( typeof reader.result !== 'string' )
                 {
                     this.imageErrors.push({key: 'productForm.imageReadError', params: {name: file.name}});
@@ -213,6 +216,7 @@ export class ProductFormComponent implements OnInit, OnDestroy
             };
 
             reader.onerror = () => {
+                this.pendingImageReads--;
                 this.imageErrors.push({key: 'productForm.imageReadError', params: {name: file.name}});
                 this._changeDetectorRef.markForCheck();
             };
@@ -231,6 +235,7 @@ export class ProductFormComponent implements OnInit, OnDestroy
      */
     removeImage(index: number): void
     {
+        if ( this.form.disabled ) { return; }
         this.images = this.images.filter((_, i) => i !== index);
     }
 
@@ -239,6 +244,7 @@ export class ProductFormComponent implements OnInit, OnDestroy
      */
     save(): void
     {
+        if ( this.form.disabled || this.pendingImageReads ) { return; }
         this.submitted = true;
         this.saveError = null;
 
@@ -254,7 +260,7 @@ export class ProductFormComponent implements OnInit, OnDestroy
             ? this._productService.updateProduct(this.product.id, payload)
             : this._productService.createProduct(payload);
 
-        this.form.disable();
+        this.form.disable({emitEvent: false});
 
         request$
             .pipe(takeUntil(this._unsubscribeAll))
@@ -264,7 +270,10 @@ export class ProductFormComponent implements OnInit, OnDestroy
                 },
                 (error: HttpErrorResponse) => {
                     this.form.enable();
-                    this.saveError = error?.status === 409 ? 'admin.products.slugTaken' : 'admin.products.saveError';
+                    this.saveError = error?.status === 409 ? 'admin.products.slugTaken'
+                        : error?.status === 413 ? 'productForm.imageStorageLimit'
+                        : error?.status === 415 || error?.status === 422 ? 'productForm.imageRejected'
+                        : 'admin.products.saveError';
                 }
             );
     }
