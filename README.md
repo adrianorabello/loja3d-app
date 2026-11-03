@@ -7,7 +7,7 @@ white sign-in panel with pink accents. Below 840px the panels stack; there is on
 reactive form at every width, so resizing preserves credentials and pending state.
 The showcase loads up to three active products from the public API, newest first,
 using real names, photos and EUR prices. Empty/loading/error states do not block
-sign-in; catalogue errors offer a retry. The five-second carousel can be paused,
+sign-in; catalogue errors offer a retry. The seven-second carousel can be paused,
 pauses on hover/focus and respects reduced motion.
 Copy uses pt-PT with English/German translations. Authentication, remembered-session
 payload and redirect URLs are unchanged; recovery and registration link to the
@@ -33,6 +33,11 @@ For deployed builds, the environment generator accepts `CHAT_ENABLED=true`;
 `API_URL` supplies the HTTP and native WS origin. Backend activation is separate.
 
 Drafts and unbound file references stay in memory only for the current identity.
+While signed in, a visible online tab reconciles conversations and the selected
+history over REST every 10 seconds, even when the WebSocket reports connected.
+Socket events still trigger immediate synchronization. This repairs missed events
+without a browser reload; it does not replace the production outbox/attachment
+worker. Polling stops on logout and skips hidden/offline tabs.
 Failed sends preserve the draft and retry key; logout clears it. Sent messages
 and files persist server-side. The page hides the floating compositor; switching
 between page and drawer does not create another socket. Unread badges update
@@ -67,6 +72,11 @@ to sign in leaves that draft, so the UI warns to copy needed values beforehand.
 No social-login, email-change UI or image-cropping editor is introduced.
 
 ## Product photos
+
+The admin create/edit form is horizontally centred within the content area with
+a responsive maximum width. The product-list sidebar entry uses exact route
+matching in both the API navigation and mock navigation so adding a product does
+not also highlight the list entry.
 
 Admin product photo selection still previews JPEG/PNG locally (up to 2 MiB per
 file, separate from the profile's 10 MiB limit). On Save, the real API converts

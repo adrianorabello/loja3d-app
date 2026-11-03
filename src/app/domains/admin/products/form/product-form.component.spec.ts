@@ -41,6 +41,13 @@ describe('Product photo persistence form', () => {
 
     afterEach(() => fixture.destroy());
 
+    it('centres the bounded form within the available content width', () => {
+        const form: HTMLFormElement = fixture.nativeElement.querySelector('form');
+        expect(form.classList.contains('mx-auto')).toBeTrue();
+        expect(form.classList.contains('w-full')).toBeTrue();
+        expect(form.classList.contains('max-w-4xl')).toBeTrue();
+    });
+
     it('sends preview data and existing image URLs and prevents duplicate saves', () => {
         component.save();
         component.save();

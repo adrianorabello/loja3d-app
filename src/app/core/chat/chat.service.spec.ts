@@ -14,8 +14,13 @@ describe('ChatService', () => {
     let users: BehaviorSubject<unknown>;
     let realtime: {start: jasmine.Spy; stop: jasmine.Spy; status: BehaviorSubject<string>; events: Subject<unknown>};
     let enabled: boolean;
+    let visibility: jasmine.Spy;
+    let online: jasmine.Spy;
 
     beforeEach(() => {
+        jasmine.clock().install();
+        visibility = spyOnProperty(document, 'visibilityState', 'get').and.returnValue('visible');
+        online = spyOnProperty(navigator, 'onLine', 'get').and.returnValue(true);
         enabled = environment.chatEnabled;
         environment.chatEnabled = true;
         users = new BehaviorSubject(null);
@@ -57,6 +62,7 @@ describe('ChatService', () => {
         users.next(null);
         http.verify({ignoreCancelled: true});
         environment.chatEnabled = enabled;
+        jasmine.clock().uninstall();
     });
 
     it('uses one realtime connection across profile updates and clears drafts on logout', () => {
@@ -96,6 +102,104 @@ describe('ChatService', () => {
         service.sync();
         http.expectOne('api/v1/chat/conversations/c1/messages?afterSeq=1&limit=100').flush({items: [message('m1', 1)], hasMore: false});
         expect(service.messages.map(item => item.id)).toEqual(['m1']);
+    });
+
+    it('receives new messages within ten seconds without socket events, reloads or focus changes', () => {
+        select();
+        jasmine.clock().tick(9999);
+        http.expectNone(request => request.url.includes('/messages'));
+        jasmine.clock().tick(1);
+        list();
+        http.expectOne('api/v1/chat/conversations/c1/messages?afterSeq=0&limit=100').flush({
+            items: [message('incoming', 1)], hasMore: false
+        });
+        expect(service.messages.map(item => item.id)).toEqual(['incoming']);
+        expect(realtime.status.value).toBe('connected');
+        jasmine.clock().tick(10000);
+        list();
+        http.expectOne('api/v1/chat/conversations/c1/messages?afterSeq=1&limit=100').flush({
+            items: [message('incoming', 1), message('next', 2)], hasMore: false
+        });
+        expect(service.messages.map(item => item.id)).toEqual(['incoming', 'next']);
+    });
+
+    it('continues to synchronize immediately on websocket events', () => {
+        select();
+        realtime.events.next({v: 1, type: 'message.created'});
+        list();
+        http.expectOne('api/v1/chat/conversations/c1/messages?afterSeq=0&limit=100').flush({
+            items: [message('live', 1)], hasMore: false
+        });
+        expect(service.messages[0].id).toBe('live');
+    });
+
+    it('refreshes conversation summaries without requiring a selected conversation', () => {
+        jasmine.clock().tick(10000);
+        http.expectOne(request => request.url === 'api/v1/chat/conversations').flush({
+            items: [{id: 'c1', customerName: 'Customer', lastSeq: 1, lastReadSeq: 0, unread: 1}],
+            hasMore: false, nextCursor: null
+        });
+        expect(service.unread).toBe(1);
+        http.expectNone(request => request.url.includes('/messages'));
+    });
+
+    it('does not overlap periodic list requests while an earlier request is pending', () => {
+        jasmine.clock().tick(10000);
+        const pending = http.expectOne(request => request.url === 'api/v1/chat/conversations');
+        jasmine.clock().tick(20000);
+        http.expectNone(request => request.url === 'api/v1/chat/conversations');
+        pending.flush({items: [], hasMore: false, nextCursor: null});
+        jasmine.clock().tick(10000);
+        list();
+        expect(service.conversations[0].id).toBe('c1');
+    });
+
+    it('skips background and offline polling and resumes on the next visible online tick', () => {
+        visibility.and.returnValue('hidden');
+        jasmine.clock().tick(10000);
+        http.expectNone(request => request.url === 'api/v1/chat/conversations');
+        visibility.and.returnValue('visible');
+        online.and.returnValue(false);
+        jasmine.clock().tick(10000);
+        http.expectNone(request => request.url === 'api/v1/chat/conversations');
+        online.and.returnValue(true);
+        jasmine.clock().tick(10000);
+        list();
+        expect(service.conversations.length).toBe(1);
+    });
+
+    it('stops polling on logout and starts only one timer for the next identity', () => {
+        users.next({...user, name: 'Updated'});
+        jasmine.clock().tick(10000);
+        list();
+        expect(realtime.start).toHaveBeenCalledTimes(1);
+        users.next(null);
+        jasmine.clock().tick(20000);
+        http.expectNone(request => request.url === 'api/v1/chat/conversations');
+        users.next({...user, id: 'customer-b'});
+        list();
+        jasmine.clock().tick(10000);
+        list();
+        expect(realtime.start).toHaveBeenCalledTimes(2);
+    });
+
+    it('retries a failed periodic sync without clearing the draft or duplicating messages', () => {
+        select();
+        service.text.setValue('Unsent draft');
+        jasmine.clock().tick(10000);
+        list();
+        http.expectOne('api/v1/chat/conversations/c1/messages?afterSeq=0&limit=100').flush(
+            {}, {status: 503, statusText: 'Unavailable'}
+        );
+        expect(service.error).toBe('chat.unavailable');
+        expect(service.text.value).toBe('Unsent draft');
+        jasmine.clock().tick(10000);
+        list();
+        http.expectOne('api/v1/chat/conversations/c1/messages?afterSeq=0&limit=100').flush({
+            items: [message('recovered', 1)], hasMore: false
+        });
+        expect(service.messages.map(item => item.id)).toEqual(['recovered']);
+        expect(service.text.value).toBe('Unsent draft');
     });
 
     it('repairs sequence gaps when the HTTP response arrives before an earlier event', () => {

@@ -143,14 +143,14 @@ describe('AuthSignInComponent', () => {
         expect(image.getAttribute('src')).toBe(PRODUCT_IMAGE_PLACEHOLDER);
     });
 
-    it('rotates every five seconds and wraps back to the first slide', () => {
+    it('rotates every seven seconds and wraps back to the first slide', () => {
         spyOnProperty(document, 'visibilityState', 'get').and.returnValue('visible');
         loadSlides();
-        jasmine.clock().tick(4999);
+        jasmine.clock().tick(6999);
         expect(component.activeSlide).toBe(0);
         jasmine.clock().tick(1);
         expect(component.activeSlide).toBe(1);
-        jasmine.clock().tick(10000);
+        jasmine.clock().tick(14000);
         expect(component.activeSlide).toBe(0);
     });
 
@@ -169,11 +169,11 @@ describe('AuthSignInComponent', () => {
     it('does not rotate when hovered, focused, or reduced motion is enabled', () => {
         loadSlides();
         component.carouselHovered = true;
-        jasmine.clock().tick(5000);
+        jasmine.clock().tick(7000);
         expect(component.activeSlide).toBe(0);
         component.carouselHovered = false;
         component.carouselFocused = true;
-        jasmine.clock().tick(5000);
+        jasmine.clock().tick(7000);
         expect(component.activeSlide).toBe(0);
         component.carouselFocused = false;
         reducedMotion.next({matches: true, breakpoints: {}});

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { FormControl, Validators } from '@angular/forms';
 import { BehaviorSubject, Subscription, timer } from 'rxjs';
-import { switchMap, takeWhile } from 'rxjs/operators';
+import { finalize, switchMap, takeWhile } from 'rxjs/operators';
 import { UserService } from 'app/core/user/user.service';
 import { User } from 'app/core/user/user.model';
 import { environment } from 'environments/environment';
@@ -44,6 +44,7 @@ export class ChatService
     private syncAgain = false;
     private readPending = false;
     private listVersion = 0;
+    private listRequests = 0;
 
     constructor(private http: HttpClient, private users: UserService, private realtime: ChatRealtimeService)
     {
@@ -52,7 +53,16 @@ export class ChatService
             if ( user?.id === this.user?.id && user?.role === this.user?.role ) { this.user = user; return; }
             this.reset();
             this.user = user;
-            if ( user ) { this.realtime.start(); this.refreshList(); }
+            if ( user ) {
+                this.realtime.start();
+                this.refreshList();
+                // A healthy socket can still miss a worker event; REST remains authoritative.
+                this.subscriptions.add(timer(10000, 10000).subscribe(() => {
+                    if ( document.visibilityState !== 'visible' || !navigator.onLine ) { return; }
+                    if ( !this.listRequests ) { this.refreshList(); }
+                    this.sync();
+                }));
+            }
             this.notify();
         });
         realtime.events.subscribe(event => {
@@ -92,9 +102,10 @@ export class ChatService
         const query = this.listQuery;
         const requestVersion = ++this.listVersion;
         const generation = this.generation;
+        this.listRequests++;
         this.subscriptions.add(this.http.get<ChatPage<ChatConversation>>('api/v1/chat/conversations', {
             params: {q: query, cursor: more ? this.nextListCursor : '', limit: '50'}
-        }).subscribe({
+        }).pipe(finalize(() => this.listRequests--)).subscribe({
             next: page => {
                 if ( generation !== this.generation || query !== this.listQuery || requestVersion !== this.listVersion ) { return; }
                 this.conversations = more

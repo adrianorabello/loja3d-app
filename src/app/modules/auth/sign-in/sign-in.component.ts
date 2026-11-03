@@ -62,7 +62,7 @@ export class AuthSignInComponent implements OnInit, OnDestroy
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe(state => this.reducedMotion = state.matches);
 
-        interval(5000).pipe(takeUntil(this._unsubscribeAll)).subscribe(() => {
+        interval(7000).pipe(takeUntil(this._unsubscribeAll)).subscribe(() => {
             if ( this.products.length > 1 && !this.reducedMotion && !this.carouselPaused &&
                 !this.carouselHovered && !this.carouselFocused && document.visibilityState === 'visible' )
             {

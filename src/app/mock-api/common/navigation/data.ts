@@ -41,6 +41,7 @@ const buildAdminNavigation = (): FuseNavigationItem[] => [
                 title: 'Lista de produtos',
                 type : 'basic',
                 link : '/admin/products',
+                exactMatch: true,
                 meta : {roles: ['ADMIN']}
             },
             {
